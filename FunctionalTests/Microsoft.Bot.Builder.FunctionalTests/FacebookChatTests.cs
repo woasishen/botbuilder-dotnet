@@ -132,10 +132,10 @@ namespace Microsoft.Bot.Builder.FunctionalTests
         {
             if (string.IsNullOrWhiteSpace(_appSecret) || string.IsNullOrWhiteSpace(_accessToken) || string.IsNullOrWhiteSpace(_botEndpoint) || string.IsNullOrWhiteSpace(_senderId))
             {
-                _appSecret = Environment.GetEnvironmentVariable("FacebookTestBotFaceBookAppSecret");
+                _appSecret = Environment.GetEnvironmentVariable("FacebookTestBotFacebookAppSecret");
                 if (string.IsNullOrWhiteSpace(_appSecret))
                 {
-                    Assert.Fail("Environment variable 'FacebookTestBotFaceBookAppSecret' not found.");
+                    Assert.Fail("Environment variable 'FacebookTestBotFacebookAppSecret' not found.");
                 }
 
                 _accessToken = Environment.GetEnvironmentVariable("FacebookTestBotFacebookAccessToken");
