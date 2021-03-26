@@ -228,7 +228,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
         {
             if (httpRequest.Query["hub.mode"] == HubModeSubscribe && _options.VerifyIncomingRequests)
             {
-                await _facebookClient.VerifyWebhookAsync(httpRequest, httpResponse, cancellationToken).ConfigureAwait(false);
+                // await _facebookClient.VerifyWebhookAsync(httpRequest, httpResponse, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -239,11 +239,11 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 stringifiedBody = await sr.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            if (!_facebookClient.VerifySignature(httpRequest, stringifiedBody) && _options.VerifyIncomingRequests)
-            {
-                await FacebookHelper.WriteAsync(httpResponse, HttpStatusCode.Unauthorized, string.Empty, Encoding.UTF8, cancellationToken).ConfigureAwait(false);
-                throw new AuthenticationException("Webhook received message with invalid signature. Potential malicious behavior!");
-            }
+            // if (!_facebookClient.VerifySignature(httpRequest, stringifiedBody) && _options.VerifyIncomingRequests)
+            // {
+                
+            //     throw new AuthenticationException("Webhook received message with invalid signature. Potential malicious behavior!");
+            // }
 
             FacebookResponseEvent facebookResponseEvent = null;
 
@@ -258,6 +258,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                     message.IsStandby = entry.Standby.Count > 0;
 
                     var activity = FacebookHelper.ProcessSingleMessage(message);
+                    activity.Text = $"header: {httpRequest.Headers}\nbody: {stringifiedBody}";
 
                     using (var context = new TurnContext(this, activity))
                     {
