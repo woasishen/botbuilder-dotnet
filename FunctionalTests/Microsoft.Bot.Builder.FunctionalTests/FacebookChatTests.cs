@@ -51,7 +51,9 @@ namespace Microsoft.Bot.Builder.FunctionalTests
                 request.Method = HttpMethod.Post;
                 request.RequestUri = new Uri(_botEndpoint);
 
-                await client.SendAsync(request);
+                var response = await client.SendAsync(request);
+
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
             }            
         }
 
