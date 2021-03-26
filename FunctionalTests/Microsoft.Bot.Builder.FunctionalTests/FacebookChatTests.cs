@@ -155,6 +155,11 @@ namespace Microsoft.Bot.Builder.FunctionalTests
                 {
                     Assert.Fail("Environment variable 'FacebookTestBotSenderId' not found.");
                 }
+
+                Console.WriteLine(_appSecret);
+                Console.WriteLine(_accessToken);
+                Console.WriteLine(_botEndpoint);
+                Console.WriteLine(_senderId);
             }
         }
     }

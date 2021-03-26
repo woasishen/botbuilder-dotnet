@@ -162,9 +162,9 @@ steps:
     arguments: '-v n --configuration $(BuildConfiguration) --filter FacebookChatTest'
   env:
     BOT_ENDPOINT: https://$(BotName).azurewebsites.net/api/messages
-    FacebookTestBotFacebookAccessToken: env.FacebookTestBotFacebookAccessToken
-    FacebookTestBotFacebookAppSecret: env.FacebookTestBotFacebookAppSecret
-    FacebookTestBotSenderId: env.FacebookTestBotSenderId
+    FacebookTestBotFacebookAccessToken: $(FacebookTestBotFacebookAccessToken)
+    FacebookTestBotFacebookAppSecret: $(FacebookTestBotFacebookAppSecret)
+    FacebookTestBotSenderId: $(FacebookTestBotSenderId)
 
 - task: AzureCLI@1
   displayName: 'Delete Azure resources'
