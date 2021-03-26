@@ -118,6 +118,9 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 var hashArray = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
                 var hash = $"SHA1={BitConverter.ToString(hashArray).Replace("-", string.Empty)}";
 
+                Console.WriteLine($"expected: {expected}");
+                Console.WriteLine($"hash: {hash}");
+
                 return expected == hash;
             }
 #pragma warning restore CA5350 // Facebook uses SHA1 as cryptographic algorithm.
