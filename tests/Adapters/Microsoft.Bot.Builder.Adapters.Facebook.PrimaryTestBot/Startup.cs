@@ -17,6 +17,9 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
         {
             services.AddControllers().AddNewtonsoftJson();
 
+            services.AddSingleton<FacebookAdapterOptions>(new FacebookAdapterOptions
+            { VerifyIncomingRequests = false });
+
             // Create the Bot Framework Facebook Adapter.
             services.AddSingleton<IBotFrameworkHttpAdapter, FacebookAdapterWithTag>();
 
