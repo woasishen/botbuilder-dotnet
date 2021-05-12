@@ -117,10 +117,10 @@ steps:
     TestAppId: $(LinuxTestBotAppId)
     TestPassword: $(LinuxTestBotAppSecret)
 
-- task: AzureCLI@1
-  displayName: 'Delete test resource group'
-  inputs:
-    azureSubscription: $(AzureSubscription)
-    scriptLocation: inlineScript
-    inlineScript: 'call az group delete -n "$(LinuxTestBotBotGroup)" --yes'
-  condition: and(always(), ne(variables['DeleteResourceGroup'], 'false'))
+# - task: AzureCLI@1
+#   displayName: 'Delete test resource group'
+#   inputs:
+#     azureSubscription: $(AzureSubscription)
+#     scriptLocation: inlineScript
+#     inlineScript: 'call az group delete -n "$(LinuxTestBotBotGroup)" --yes'
+#   condition: and(always(), ne(variables['DeleteResourceGroup'], 'false'))
