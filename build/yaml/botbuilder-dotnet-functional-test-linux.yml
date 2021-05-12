@@ -105,6 +105,11 @@ steps:
    Write-Host "DIRECTLINE=$key";
    Write-Host "BOTID=$(LinuxTestBotBotName)";
   displayName: 'Set directline key for test'
+  
+- task: InlinePowershell@1
+  displayName: 'Inline Powershell'
+  inputs:
+    Script: 'Start-Sleep -s 700'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
