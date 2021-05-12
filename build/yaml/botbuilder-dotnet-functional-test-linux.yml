@@ -109,7 +109,7 @@ steps:
 - task: InlinePowershell@1
   displayName: 'Inline Powershell'
   inputs:
-    Script: 'Start-Sleep -s 700'
+    Script: 'Start-Sleep -s 800'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet test'
