@@ -23,6 +23,33 @@ steps:
     maximumCpuCount: true
     logProjectEvents: false
 
+- powershell: |
+    $rootFolder = "$(Build.SourcesDirectory)";
+    $filespec = $rootFolder + "/libraries/**/obj/project.assets.json";
+    $destination = "$(Build.ArtifactStagingDirectory)/diagnosticfiles";
+
+    "Copying files " + $filespec + " to " + $destination + ".";
+    " ";
+
+    Get-ChildItem -Recurse -Path "$filespec" | % {
+        $relativeFilePath = $_.Directory.ToString().Substring($rootFolder.Length);
+        $targetFolder = "$destination" + $relativeFilePath;
+
+        # Create target folder or else Copy-Item creates a file.
+        $null = New-Item -ItemType directory -Path $targetFolder -Force
+
+        $_.FullName + " --> " + $targetFolder;
+
+        Copy-Item -Path $_ -Destination $targetFolder
+    }
+  displayName: 'Copy project.assets.json files to diagnosticfiles folder'
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish diagnostic files artifact'
+  inputs:
+    artifactName: 'DiagnosticFiles-$(BuildConfiguration)-$(BuildTarget)'
+    targetPath: diagnosticfiles
+
 - script: |
    cd ..
    dir *.* /s
