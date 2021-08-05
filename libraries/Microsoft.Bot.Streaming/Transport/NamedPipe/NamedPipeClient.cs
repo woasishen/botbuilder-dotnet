@@ -26,6 +26,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         private readonly bool _autoReconnect;
         private readonly object _syncLock = new object();
         private bool _isDisconnecting;
+        private readonly int _retryCount;
 
         // To detect redundant calls to dispose
         private bool _disposed;
@@ -36,10 +37,10 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// </summary>
         /// <param name="baseName">The named pipe to connect to.</param>
         /// <param name="requestHandler">Optional <see cref="RequestHandler"/> to process incoming messages received by this client.</param>
-        /// <param name="autoReconnect">Optional setting to determine if the client sould attempt to reconnect
-        /// automatically on disconnection events. Defaults to true.
-        /// </param>
-        public NamedPipeClient(string baseName, RequestHandler requestHandler = null, bool autoReconnect = true)
+        /// <param name="autoReconnect">Optional setting to determine if the client should attempt to reconnect
+        /// automatically on disconnection events. Defaults to true.</param>
+        /// <param name="retryCount">Optional setting to determine how many times the client attempts to reconnect.</param>
+        public NamedPipeClient(string baseName, RequestHandler requestHandler = null, bool autoReconnect = true, int retryCount = 9)
         {
             if (string.IsNullOrWhiteSpace(baseName))
             {
@@ -49,6 +50,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
             _baseName = baseName;
             _requestHandler = requestHandler;
             _autoReconnect = autoReconnect;
+            _retryCount = retryCount;
 
             _requestManager = new RequestManager();
 
@@ -233,8 +235,8 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
 
                     if (_autoReconnect)
                     {
-                        // Try to rerun the client connection
-                        Background.Run(ConnectAsync);
+                        // Try to rerun the client connection with retries
+                        Background.Run(ConnectWithRetriesAsync);
                     }
                 }
                 finally
@@ -243,6 +245,30 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
                     {
                         _isDisconnecting = false;
                     }
+                }
+            }
+        }
+
+        private async Task ConnectWithRetriesAsync()
+        {
+            var retries = 0;
+
+            while (true)
+            {
+                try
+                {
+                    await ConnectAsync().ConfigureAwait(false);
+                    return;
+                }
+                catch
+                {
+                    if (retries >= _retryCount)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retries))).ConfigureAwait(false);
+                    retries++;
                 }
             }
         }
