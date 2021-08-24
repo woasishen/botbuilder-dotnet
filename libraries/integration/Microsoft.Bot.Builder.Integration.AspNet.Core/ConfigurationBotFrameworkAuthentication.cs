@@ -30,6 +30,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         /// <param name="logger">The ILogger instance to use.</param>
         public ConfigurationBotFrameworkAuthentication(IConfiguration configuration, ServiceClientCredentialsFactory credentialsFactory = null, AuthenticationConfiguration authConfiguration = null, IHttpClientFactory httpClientFactory = null, ILogger logger = null)
         {
+            configuration.ApplyRegionality();
             var channelService = configuration.GetSection("ChannelService")?.Value;
             var validateAuthority = configuration.GetSection("ValidateAuthority")?.Value;
             var toChannelFromBotLoginUrl = configuration.GetSection("ToChannelFromBotLoginUrl")?.Value;
