@@ -7,7 +7,7 @@ namespace Microsoft.Bot.Builder
     /// Extension for <see cref="IConfiguration"/> to apply regionality.
     /// Use reginal settings to cover the non-explicit settings.
     /// </summary>
-    public static class RegionalityConfiguration
+    public static class RegionalityConfigurationExtension
     {
         private const string RegionKey = "region";
         private const string DefaultRegion = "global";
@@ -38,6 +38,7 @@ namespace Microsoft.Bot.Builder
         /// <returns>Settings.</returns>
         private static IDictionary<string, IDictionary<string, string>> GetRegionSettings()
         {
+            // TODO. Get from some json files.
             return new Dictionary<string, IDictionary<string, string>>();
         }
     }
