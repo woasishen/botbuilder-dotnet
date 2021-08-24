@@ -158,8 +158,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Actions
             var result = dc.State.GetValue<object>(this.ItemsProperty.GetValue(dc.State));
             var list = ConvertToList(result);
 
-            var index = dc.State.GetValue(Index.GetValue(dc.State), () => -1);
-
             // Next item
             if (list != null && ++index < list.Count)
             {
