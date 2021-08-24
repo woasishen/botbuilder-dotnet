@@ -27,6 +27,7 @@ namespace Microsoft.Bot.Builder.BotFramework
         /// <param name="configuration">An instance of <see cref="IConfiguration"/>.</param>
         public ConfigurationChannelProvider(IConfiguration configuration)
         {
+            configuration.ApplyRegionality();
             this.ChannelService = configuration.GetSection(ChannelServiceKey)?.Value;
         }
     }

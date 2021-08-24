@@ -105,6 +105,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
             ILogger logger = null)
             : this(credentialProvider ?? new ConfigurationCredentialProvider(configuration), authConfig ?? new AuthenticationConfiguration(), channelProvider ?? new ConfigurationChannelProvider(configuration), connectorClientRetryPolicy, customHttpClient, middleware, logger)
         {
+            configuration.ApplyRegionality();
             var openIdEndpoint = configuration.GetSection(AuthenticationConstants.BotOpenIdMetadataKey)?.Value;
 
             if (!string.IsNullOrEmpty(openIdEndpoint))

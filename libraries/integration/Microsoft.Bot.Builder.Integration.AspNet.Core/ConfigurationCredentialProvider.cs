@@ -23,6 +23,7 @@ namespace Microsoft.Bot.Builder.BotFramework
         /// <param name="configuration">An instance of <see cref="IConfiguration"/>.</param>
         public ConfigurationCredentialProvider(IConfiguration configuration)
         {
+            configuration.ApplyRegionality();
             this.AppId = configuration.GetSection(MicrosoftAppCredentials.MicrosoftAppIdKey)?.Value;
             this.Password = configuration.GetSection(MicrosoftAppCredentials.MicrosoftAppPasswordKey)?.Value;
         }

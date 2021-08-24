@@ -17,6 +17,7 @@ namespace Microsoft.Bot.Builder.Runtime.Tests.Components.TestComponents
     {
         public ContosoAdapter(IConfiguration config)
         {
+            config.ApplyRegionality();
             ContosoSecret = config.GetValue<string>($"{this.GetType().FullName}:contosoSecret");
         }
 

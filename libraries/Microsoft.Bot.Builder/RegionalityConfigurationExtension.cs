@@ -14,29 +14,37 @@ namespace Microsoft.Bot.Builder
 
         /// <summary>
         /// If the configuration contasins "region" property, use region values cover all other settings.
-        /// Priority: 1. Explicit settings 2. Reginality value 3. Default constant.
+        /// Priority: 1. Explicit settings 2. Reginality value.
         /// </summary>
         /// <param name="configuration">Appsettings.</param>
         public static void ApplyRegionality(this IConfiguration configuration)
         {
             var region = configuration.GetValue<string>(RegionKey) ?? DefaultRegion;
 
-            var regionSettings = GetRegionSettings();
-            if (regionSettings.ContainsKey(region))
+            var regionSettings = GetRegionSetting(region);
+            foreach (var regionSetting in regionSettings)
             {
-                foreach (var regionSetting in regionSettings[region])
-                {
-                    configuration[regionSetting.Key] ??= regionSetting.Value;
-                }
+                configuration[regionSetting.Key] ??= regionSetting.Value;
             }
         }
 
         /// <summary>
-        /// Get region settings. Region name to KV pairs mapping.
+        /// Get the setting of certain region.
+        /// </summary>
+        /// <param name="region">Region name. Default is <see cref="DefaultRegion"/>.</param>
+        /// <returns>Region Setting.</returns>
+        private static IDictionary<string, string> GetRegionSetting(string region)
+        {
+            var allRegionSettings = GetAllRegionSettings();
+            return allRegionSettings.ContainsKey(region) ? allRegionSettings[region] : new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Get all region settings. Which is region name to KV pairs mapping.
         /// For example: { "en-us": { "connectionString": "xx" }, "en": { "xxkey": "yy" } }.
         /// </summary>
         /// <returns>Settings.</returns>
-        private static IDictionary<string, IDictionary<string, string>> GetRegionSettings()
+        private static IDictionary<string, IDictionary<string, string>> GetAllRegionSettings()
         {
             // TODO. Get from some json files.
             return new Dictionary<string, IDictionary<string, string>>();
