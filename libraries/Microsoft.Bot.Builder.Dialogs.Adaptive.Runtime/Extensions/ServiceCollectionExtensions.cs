@@ -81,6 +81,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Runtime.Extensions
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+            configuration.ApplyRegionality();
+
             // Ensure the IConfiguration is available. (Azure Functions don't do this.)
             services.TryAddSingleton(configuration);
 
