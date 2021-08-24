@@ -26,6 +26,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Actions
         private const string IterationKey = "index";
         private const string IterationValue = "value";
 
+        private int index;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Foreach"/> class.
         /// </summary>
@@ -97,7 +99,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Actions
                 return await dc.EndDialogAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
-            dc.State.RemoveValue(Index.GetValue(dc.State));
+            index = -1;
             return await this.NextItemAsync(dc, cancellationToken).ConfigureAwait(false);
         }
 
