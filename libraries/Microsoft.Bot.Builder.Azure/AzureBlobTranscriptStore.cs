@@ -68,8 +68,8 @@ namespace Microsoft.Bot.Builder.Azure
                 var container = blobClient.GetContainerReference(containerName);
                 if (!_checkedContainers.Contains(containerName))
                 {
-                    _checkedContainers.Add(containerName);
                     container.CreateIfNotExistsAsync().Wait();
+                    _checkedContainers.Add(containerName);
                 }
 
                 return container;
@@ -180,6 +180,11 @@ namespace Microsoft.Bot.Builder.Azure
 
                 foreach (var blob in segment.Results.Cast<CloudBlockBlob>())
                 {
+                    if (!blob.Metadata.ContainsKey("Timestamp"))
+                    {
+                        continue;
+                    }
+
                     if (DateTime.Parse(blob.Metadata["Timestamp"], CultureInfo.InvariantCulture).ToUniversalTime() >= startDate)
                     {
                         if (continuationToken != null)

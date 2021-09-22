@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Bot.Connector.Tests
 {
-    public class ConversationsTest : BaseTest
+    public class ConversationsTests : BaseTest
     {
         [Fact]
         public void AgentStringComponents()
@@ -48,6 +48,41 @@ namespace Microsoft.Bot.Connector.Tests
                 var result = await client.Conversations.CreateConversationAsync(param);
                 Assert.NotNull(result.ActivityId);
             });
+        }
+
+        [Fact]
+        public async Task SendConversationHistoryWithHttpMessagesAsync_ShouldThrowOnNullConversationId()
+        {
+            var client = new ConnectorClient(HostUri, new BotAccessTokenStub("token"));
+            await Assert.ThrowsAsync<ValidationException>(() => client.Conversations.SendConversationHistoryAsync(
+                null, new Transcript()));
+        }
+
+        [Fact]
+        public async Task SendConversationHistoryWithHttpMessagesAsync_ShouldThrowOnNullTranscript()
+        {
+            var client = new ConnectorClient(HostUri, new BotAccessTokenStub("token"));
+            await Assert.ThrowsAsync<ValidationException>(() => client.Conversations.SendConversationHistoryAsync(
+                "dummyConversationId", null));
+        }
+
+        [Fact]
+        public async Task SendConversationHistoryWithHttpMessagesAsync_ShouldThrowOnNoLocalBot()
+        {
+            var client = new ConnectorClient(HostUri, new BotAccessTokenStub("token"));
+            ServiceClientTracing.IsEnabled = true;
+            await Assert.ThrowsAsync<ErrorResponseException>(() => client.Conversations.SendConversationHistoryAsync(
+                "dummyConversationId", new Transcript()));
+        }
+
+        [Fact]
+        public async Task GetConversationsWithHttpMessagesAsync_ShouldThrowOnNoLocalBot()
+        {
+            //var client = new OAuthClient(new Uri("http://localhost"), new BotAccessTokenStub("token"));
+            var client = new ConnectorClient(HostUri, new BotAccessTokenStub("token"));
+            ServiceClientTracing.IsEnabled = true;
+            await Assert.ThrowsAsync<ErrorResponseException>(() => client.Conversations.GetConversationsAsync(
+                "dummyContinuationToken"));
         }
 
         [Fact]
@@ -1003,11 +1038,14 @@ namespace Microsoft.Bot.Connector.Tests
 
             var customHeaders = new Dictionary<string, List<string>>() { { "customHeader", new List<string>() { "customValue" } } };
 
+            var conversationId = string.Empty;
+
             await AssertTracingFor(
                 async () =>
                 await UseClientFor(async client =>
                 {
                     var conversation = await client.Conversations.CreateConversationAsync(createMessage);
+                    conversationId = conversation.Id;
                     var response = await client.Conversations.SendToConversationAsync(conversationId: conversation.Id, activity: activity);
                     var replyResponse = await client.Conversations.ReplyToActivityWithHttpMessagesAsync(
                         conversation.Id, response.Id, reply, customHeaders, default(CancellationToken));
@@ -1016,7 +1054,15 @@ namespace Microsoft.Bot.Connector.Tests
                 }),
                 nameof(ConversationsExtensions.ReplyToActivityAsync),
                 assertHttpRequestMessage:
-                    (h) => h.Headers.Contains("customHeader") && h.Headers.GetValues("customHeader").Contains("customValue"));
+                    (h) =>
+                    {
+                        bool customHeaderAssertion = h.Headers.Contains("customHeader") &&
+                                                     h.Headers.GetValues("customHeader").Contains("customValue");
+                        bool convIdHeaderAssertion = h.Headers.Contains(ConversationConstants.ConversationIdHttpHeaderName) &&
+                                                     h.Headers.GetValues(ConversationConstants.ConversationIdHttpHeaderName).Contains(conversationId);
+
+                        return customHeaderAssertion && convIdHeaderAssertion;
+                    });
         }
 
         [Fact]

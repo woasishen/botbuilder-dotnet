@@ -89,7 +89,7 @@ namespace Microsoft.Bot.Builder.Streaming
             _userAgent = GetUserAgent();
             _server = new WebSocketServer(socket, this);
             _serverIsConnected = true;
-            _server.Disconnected += Server_Disconnected;
+            _server.Disconnected += ServerDisconnected;
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Microsoft.Bot.Builder.Streaming
             _userAgent = GetUserAgent();
             _server = new NamedPipeServer(pipeName, this);
             _serverIsConnected = true;
-            _server.Disconnected += Server_Disconnected;
+            _server.Disconnected += ServerDisconnected;
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Microsoft.Bot.Builder.Streaming
         /// Begins listening for incoming requests over this StreamingRequestHandler's server.
         /// </summary>
         /// <returns>A task that completes once the server is no longer listening.</returns>
-        public async Task ListenAsync()
+        public virtual async Task ListenAsync()
         {
             await _server.StartAsync().ConfigureAwait(false);
             _logger.LogInformation("Streaming request handler started listening");
@@ -380,7 +380,7 @@ namespace Microsoft.Bot.Builder.Streaming
         /// <param name="activity">The activity to send.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that resolves to a <see cref="ResourceResponse"/>.</returns>
-        public async Task<ResourceResponse> SendActivityAsync(Activity activity, CancellationToken cancellationToken = default)
+        public virtual async Task<ResourceResponse> SendActivityAsync(Activity activity, CancellationToken cancellationToken = default)
         {
             string requestPath;
             if (!string.IsNullOrWhiteSpace(activity.ReplyToId) && activity.ReplyToId.Length >= 1)
@@ -403,28 +403,24 @@ namespace Microsoft.Bot.Builder.Streaming
                 }
             }
 
-            try
+            if (!_serverIsConnected)
             {
-                if (!_serverIsConnected)
-                {
-                    throw new InvalidOperationException("Error while attempting to send: Streaming transport is disconnected.");
-                }
-
-                var serverResponse = await _server.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-                if (serverResponse.StatusCode == (int)HttpStatusCode.OK)
-                {
-                    return serverResponse.ReadBodyAsJson<ResourceResponse>();
-                }
-            }
-#pragma warning disable CA1031 // Do not catch general exception types (this should probably be addressed later, but for now we just log the error and continue the execution)
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                _logger.LogError(ex.Message);
+                throw new InvalidOperationException("Error while attempting to send: Streaming transport is disconnected.");
             }
 
-            return null;
+            // Attempt to send the request. If send fails, we let the original exception get thrown so that the 
+            // upper layers can handle it and trigger OnError. This is consistent with error handling in http and proactive 
+            // paths, making all 3 paths consistent in terms of error handling.
+            var serverResponse = await _server.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (serverResponse.StatusCode == (int)HttpStatusCode.OK)
+            {
+                return serverResponse.ReadBodyAsJson<ResourceResponse>();
+            }
+            else
+            {
+                throw new Exception($"Failed to send request through streaming transport. Status code: {serverResponse.StatusCode}.");
+            }
         }
 
         /// <summary>
@@ -441,6 +437,19 @@ namespace Microsoft.Bot.Builder.Streaming
             }
 
             return _server.SendAsync(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// An event handler for server disconnected events.
+        /// </summary>
+        /// <param name="sender">The source of the disconnection event.</param>
+        /// <param name="e">The arguments specified by the disconnection event.</param>
+        protected virtual void ServerDisconnected(object sender, DisconnectedEventArgs e)
+        {
+            _serverIsConnected = false;
+
+            // remove ourselves from the global collection
+            _requestHandlers.TryRemove(_instanceId, out var _);
         }
 
         /// <summary>
@@ -487,14 +496,6 @@ namespace Microsoft.Bot.Builder.Streaming
             }
 
             return null;
-        }
-
-        private void Server_Disconnected(object sender, DisconnectedEventArgs e)
-        {
-            _serverIsConnected = false;
-
-            // remove ourselves from the global collection
-            _requestHandlers.TryRemove(_instanceId, out var _);
         }
 
         /// <summary>
