@@ -13,9 +13,13 @@ using Microsoft.Bot.Streaming.Transport.WebSockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.Bot.Connector.Authentication
+namespace Microsoft.Bot.Builder.Streaming
 {
-    internal sealed class LegacyStreamingConnection : StreamingConnection, IDisposable
+    /// <summary>
+    /// Streaming connection for legacy bots.
+    /// </summary>
+    [Obsolete("Use WebSocketStreamingConnection instead.", false)]
+    public sealed class LegacyStreamingConnection : StreamingConnection, IDisposable
     {
         private readonly WebSocket _socket;
         private readonly string _pipeName;
@@ -25,12 +29,22 @@ namespace Microsoft.Bot.Connector.Authentication
         private bool _serverIsConnected;
         private bool _disposedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LegacyStreamingConnection"/> class.
+        /// </summary>
+        /// <param name="socket">The web socket.</param>
+        /// <param name="logger">The logger for the connection.</param>
         public LegacyStreamingConnection(WebSocket socket, ILogger logger)
         {
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _logger = logger ?? NullLogger.Instance;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LegacyStreamingConnection"/> class.
+        /// </summary>
+        /// <param name="pipeName">The underlying named pipe name.</param>
+        /// <param name="logger">The logger for the connection.</param>
         public LegacyStreamingConnection(string pipeName, ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(pipeName))
@@ -42,6 +56,7 @@ namespace Microsoft.Bot.Connector.Authentication
             _logger = logger ?? NullLogger.Instance;
         }
 
+        /// <inheritdoc/>
         public override async Task ListenAsync(RequestHandler requestHandler, CancellationToken cancellationToken = default)
         {
             _server = CreateStreamingTransportServer(requestHandler);
@@ -51,6 +66,7 @@ namespace Microsoft.Bot.Connector.Authentication
             await _server.StartAsync().ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public override async Task<ReceiveResponse> SendStreamingRequestAsync(StreamingRequest request, CancellationToken cancellationToken = default)
         {
             if (!_serverIsConnected)
@@ -61,6 +77,7 @@ namespace Microsoft.Bot.Connector.Authentication
             return await _server.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
