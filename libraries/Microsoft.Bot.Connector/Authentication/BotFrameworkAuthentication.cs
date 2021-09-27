@@ -84,22 +84,6 @@ namespace Microsoft.Bot.Connector.Authentication
         }
 
         /// <summary>
-        /// Creates a <see cref="StreamingConnection"/> that uses web sockets.
-        /// </summary>
-        /// <param name="httpContext"><see cref="HttpContext"/> instance on which to accept the web socket.</param>
-        /// <param name="logger">Logger implementation for tracing and debugging information.</param>
-        /// <returns><see cref="StreamingConnection"/> that uses web socket.</returns>
-        public virtual Task<StreamingConnection> CreateWebSocketConnectionAsync(HttpContext httpContext, ILogger logger)
-        {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            return Task.FromResult<StreamingConnection>(new WebSocketStreamingConnection(httpContext, logger));
-        }
-
-        /// <summary>
         /// Generates the appropriate callerId to write onto the activity, this might be null.
         /// </summary>
         /// <param name="credentialFactory">A <see cref="ServiceClientCredentialsFactory"/> to use.</param>

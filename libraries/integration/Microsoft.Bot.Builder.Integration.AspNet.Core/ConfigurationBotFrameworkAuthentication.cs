@@ -107,17 +107,5 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         {
             return _inner.CreateBotFrameworkClient();
         }
-
-        /// <inheritdoc/>
-        public override async Task<StreamingConnection> CreateWebSocketConnectionAsync(HttpContext httpContext, ILogger logger)
-        {
-            if (_useLegacyStreamingConnection)
-            {
-                var socket = await httpContext.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
-                return new LegacyStreamingConnection(socket, logger);
-            }
-
-            return await base.CreateWebSocketConnectionAsync(httpContext, logger).ConfigureAwait(false);
-        }
     }
 }

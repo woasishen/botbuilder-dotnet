@@ -173,6 +173,16 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
             throw new ApplicationException($"No streaming connection found for activity: {activity}");
         }
 
+        protected virtual Task<StreamingConnection> CreateWebSocketConnectionAsync(HttpContext httpContext, ILogger logger)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            return Task.FromResult<StreamingConnection>(new WebSocketStreamingConnection(httpContext, logger));
+        }
+
         private async Task ConnectAsync(HttpRequest httpRequest, IBot bot, CancellationToken cancellationToken)
         {
             Logger.LogInformation($"Received request for web socket connect.");
