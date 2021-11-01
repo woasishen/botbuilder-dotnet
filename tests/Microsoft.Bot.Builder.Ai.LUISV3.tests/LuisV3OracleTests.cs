@@ -152,7 +152,7 @@ namespace Microsoft.Bot.Builder.AI.LuisV3.Tests
                 {
                     var traceActivity = activity as ITraceActivity;
                     Assert.NotNull(traceActivity);
-                    #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
                     Assert.Equal(LuisRecognizer.LuisTraceType, traceActivity.ValueType);
                     Assert.Equal(LuisRecognizer.LuisTraceLabel, traceActivity.Label);
 
@@ -299,7 +299,17 @@ namespace Microsoft.Bot.Builder.AI.LuisV3.Tests
             var userAgent = clientHandler.UserAgent;
 
             // And that we added the bot.builder package details.
-            Assert.Contains("Microsoft.Bot.Builder.AI.Luis/4", userAgent);
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_OS")) &&
+                Environment.GetEnvironmentVariable("AGENT_OS").Equals("Windows_NT"))
+            {
+                // In Windows we get v5.
+                Assert.Contains("microsoft.bot.builder.ai.luis/5", userAgent.ToLower());
+            }
+            else
+            {
+                // In MacLinux we get v4.
+                Assert.Contains("microsoft.bot.builder.ai.luis/4", userAgent.ToLower());
+            }
         }
 
         [Fact]

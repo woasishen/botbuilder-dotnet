@@ -43,8 +43,11 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
 
             var transport = new MockTransportReceiver(buffer);
             var receiver = new PayloadReceiver();
+
+            // First connection succeeds.
             receiver.Connect(transport);
 
+            // Second connection throws an exception.
             Assert.Throws<InvalidOperationException>(() => receiver.Connect(transport));
         }
     }
