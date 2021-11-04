@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Schema;
+using Microsoft.BotBuilderSamples.DialogRootBot.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -15,11 +16,13 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger logger = null)
             : base(configuration, options, logger)
         {
+            Use(new LoggerMiddleware());
         }
 
         public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger logger = null)
             : base(facebookClient, options, logger)
         {
+            Use(new LoggerMiddleware());
         }
 
         protected override FacebookMessage CreateFacebookMessageFromActivity(Activity activity)
