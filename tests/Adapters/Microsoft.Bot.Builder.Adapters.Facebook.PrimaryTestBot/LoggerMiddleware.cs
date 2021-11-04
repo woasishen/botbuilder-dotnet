@@ -27,9 +27,10 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 
         private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Bot.Schema.Activity> activities, Func<Task<ResourceResponse[]>> next)
         {
+            System.Diagnostics.Trace.TraceInformation("Debug 5 OutgoingHandler");
             foreach (var activity in activities)
             {
-                System.Diagnostics.Trace.WriteLine(JsonConvert.SerializeObject(activity, Formatting.Indented));
+                System.Diagnostics.Trace.TraceInformation(JsonConvert.SerializeObject(activity, Formatting.Indented));
             }
 
             return await next();

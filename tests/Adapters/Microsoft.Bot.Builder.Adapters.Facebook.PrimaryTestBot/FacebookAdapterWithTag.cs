@@ -16,14 +16,14 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger logger = null)
             : base(configuration, options, logger)
         {
-            System.Diagnostics.Trace.WriteLine("Debug 2");
+            System.Diagnostics.Trace.TraceInformation("Debug 2");
             Use(new LoggerMiddleware());
         }
 
         public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger logger = null)
             : base(facebookClient, options, logger)
         {
-            System.Diagnostics.Trace.WriteLine("Debug 3");
+            System.Diagnostics.Trace.TraceInformation("Debug 3");
             Use(new LoggerMiddleware());
         }
 

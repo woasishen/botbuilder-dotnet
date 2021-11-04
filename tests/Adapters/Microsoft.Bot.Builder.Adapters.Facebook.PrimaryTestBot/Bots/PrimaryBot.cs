@@ -25,7 +25,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
         {
             if (turnContext.Activity.Attachments != null)
             {
-                System.Diagnostics.Trace.WriteLine("Debug 7");
+                System.Diagnostics.Trace.TraceInformation("Debug 7");
                 foreach (var attachment in turnContext.Activity.Attachments)
                 {
                     var activity = MessageFactory.Text($" I got {turnContext.Activity.Attachments.Count} attachments");
@@ -44,7 +44,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
             }
             else if (turnContext.Activity.GetChannelData<FacebookMessage>().IsStandby)
             {
-                System.Diagnostics.Trace.WriteLine("Debug 8");
+                System.Diagnostics.Trace.TraceInformation("Debug 8");
                 if ((turnContext.Activity as Activity)?.Text == "Invoke a take")
                 {
                     var activity = MessageFactory.Text("Hi! I'm the primary bot!");
@@ -59,7 +59,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
             {
                 IActivity activity;
 
-                System.Diagnostics.Trace.WriteLine("Debug 9");
+                System.Diagnostics.Trace.TraceInformation("Debug 9");
                 var messageText = turnContext.Activity.Text.ToLowerInvariant();
 
                 switch (messageText)
@@ -111,16 +111,16 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
                         activity = FacebookHelper.GenerateTypingActivity(turnContext.Activity.Conversation.Id);
                         break;
                     default:
-                        System.Diagnostics.Trace.WriteLine("Debug 10");
+                        System.Diagnostics.Trace.TraceInformation("Debug 10");
                         activity = MessageFactory.Text($"Echo: {turnContext.Activity.Text}");
                         break;
                 }
 
-                System.Diagnostics.Trace.WriteLine("Debug 11");
+                System.Diagnostics.Trace.TraceInformation("Debug 11");
 
                 await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
 
-                System.Diagnostics.Trace.WriteLine("Debug 12");
+                System.Diagnostics.Trace.TraceInformation("Debug 12");
             }
         }
 
