@@ -236,6 +236,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 return;
             }
 
+            System.Diagnostics.Trace.WriteLine("Debug 1");
             string stringifiedBody;
 
             using (var sr = new StreamReader(httpRequest.Body))
@@ -249,6 +250,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 throw new AuthenticationException("Webhook received message with invalid signature. Potential malicious behavior!");
             }
 
+            System.Diagnostics.Trace.WriteLine("Debug 4");
             FacebookResponseEvent facebookResponseEvent = null;
 
             facebookResponseEvent = JsonConvert.DeserializeObject<FacebookResponseEvent>(stringifiedBody);

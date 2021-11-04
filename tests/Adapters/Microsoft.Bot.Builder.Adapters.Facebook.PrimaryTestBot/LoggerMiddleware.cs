@@ -25,11 +25,11 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
             await next(cancellationToken);
         }
 
-        private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Activity> activities, Func<Task<ResourceResponse[]>> next)
+        private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Bot.Schema.Activity> activities, Func<Task<ResourceResponse[]>> next)
         {
             foreach (var activity in activities)
             {
-                Console.WriteLine(JsonConvert.SerializeObject(activity, Formatting.Indented));
+                System.Diagnostics.Trace.WriteLine(JsonConvert.SerializeObject(activity, Formatting.Indented));
             }
 
             return await next();

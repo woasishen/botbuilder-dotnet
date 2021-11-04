@@ -16,12 +16,14 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger logger = null)
             : base(configuration, options, logger)
         {
+            System.Diagnostics.Trace.WriteLine("Debug 2");
             Use(new LoggerMiddleware());
         }
 
         public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger logger = null)
             : base(facebookClient, options, logger)
         {
+            System.Diagnostics.Trace.WriteLine("Debug 3");
             Use(new LoggerMiddleware());
         }
 
@@ -34,6 +36,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
             var message = base.CreateFacebookMessageFromActivity(activity);
             message.MessagingType = "MESSAGE_TAG";
             message.Tag = "ACCOUNT_UPDATE";
+
             return message;
         }
     }
