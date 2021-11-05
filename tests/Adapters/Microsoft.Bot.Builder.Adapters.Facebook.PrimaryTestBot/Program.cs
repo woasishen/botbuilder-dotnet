@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
 {
@@ -15,6 +16,19 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .ConfigureLogging(logging =>
+            {
+                // clear default logging providers
+                logging.ClearProviders();
+
+                // add built-in providers manually, as needed 
+                logging.AddConsole();
+                logging.AddDebug();
+                logging.AddEventLog();
+                logging.AddEventSourceLogger();
+
+                // logging.AddTraceSource(sourceSwitchName); 
+            });
     }
 }
