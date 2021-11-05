@@ -94,7 +94,7 @@ steps:
    $content.FacebookAppSecret = "$(FacebookTestBotFaceBookAppSecret)";
    $content.FacebookAccessToken = "$(FacebookTestBotFacebookAccessToken)";
    $content | ConvertTo-Json | Set-Content $file;
-   '-------------'; get-content $file.FullName; '==================='
+   '-------------'; get-content $file; '==================='
   displayName: 'Set values in appsettings.json file.'
 - task: NuGetCommand@2
   inputs:
