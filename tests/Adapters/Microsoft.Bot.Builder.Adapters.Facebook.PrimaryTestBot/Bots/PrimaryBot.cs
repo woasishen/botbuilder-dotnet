@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Adapters.Facebook.FacebookEvents.Handover;
+using Microsoft.Bot.Builder.Adapters.Facebook.TestBot;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 
@@ -25,6 +26,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
         {
             if (turnContext.Activity.Attachments != null)
             {
+                Program.WriteToLog("Debug 7 OnMessageActivityAsync");
                 System.Diagnostics.Trace.TraceInformation("Debug 7");
                 foreach (var attachment in turnContext.Activity.Attachments)
                 {
@@ -44,6 +46,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
             }
             else if (turnContext.Activity.GetChannelData<FacebookMessage>().IsStandby)
             {
+                Program.WriteToLog("Debug 8 OnMessageActivityAsync");
                 System.Diagnostics.Trace.TraceInformation("Debug 8");
                 if ((turnContext.Activity as Activity)?.Text == "Invoke a take")
                 {
@@ -59,6 +62,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
             {
                 IActivity activity;
 
+                Program.WriteToLog("Debug 9 OnMessageActivityAsync");
                 System.Diagnostics.Trace.TraceInformation("Debug 9");
                 var messageText = turnContext.Activity.Text.ToLowerInvariant();
 
@@ -111,15 +115,18 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
                         activity = FacebookHelper.GenerateTypingActivity(turnContext.Activity.Conversation.Id);
                         break;
                     default:
+                        Program.WriteToLog("Debug 10 OnMessageActivityAsync");
                         System.Diagnostics.Trace.TraceInformation("Debug 10");
                         activity = MessageFactory.Text($"Echo: {turnContext.Activity.Text}");
                         break;
                 }
 
+                Program.WriteToLog("Debug 11 OnMessageActivityAsync");
                 System.Diagnostics.Trace.TraceInformation("Debug 11");
 
                 await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
 
+                Program.WriteToLog("Debug 12 OnMessageActivityAsync");
                 System.Diagnostics.Trace.TraceInformation("Debug 12");
             }
         }

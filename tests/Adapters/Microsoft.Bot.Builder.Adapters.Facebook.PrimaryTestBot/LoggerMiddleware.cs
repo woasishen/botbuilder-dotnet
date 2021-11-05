@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Adapters.Facebook.TestBot;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
@@ -24,11 +25,15 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 
         public LoggerMiddleware(ILogger<BotFrameworkHttpAdapter> logger)
         {
+            Program.WriteToLog("Debug 1 LoggerMiddleware");
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
         {
+            Program.WriteToLog("Debug 2 OnTurnAsync");
+
             // Register outgoing handler.
             turnContext.OnSendActivities(OutgoingHandler);
 
@@ -38,6 +43,7 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 
         private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Activity> activities, Func<Task<ResourceResponse[]>> next)
         {
+            Program.WriteToLog("Debug 5.0 OutgoingHandler");
             _logger.LogInformation("Debug 5 OutgoingHandler");
             foreach (var activity in activities)
             {

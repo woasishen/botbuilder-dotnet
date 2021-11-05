@@ -6,9 +6,29 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
 {
     public class Program
     {
+        private static ILogger _logger;
+
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            var loggerF = LoggerFactory.Create(builder =>
+            {
+                builder.AddFilter("BlazorDiceRoller", LogLevel.Warning)
+                .AddConsole()
+                .AddAzureWebAppDiagnostics()
+                .AddFilter("Microsoft", LogLevel.Warning)
+                .AddFilter("System", LogLevel.Warning);
+            });
+            _logger = loggerF.CreateLogger<Program>();
+
+            host.Run();
+            Program.WriteToLog("Debug 0 Main");
+        }
+
+        public static void WriteToLog(string message)
+        {
+            Program._logger.LogError(message);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -18,17 +38,18 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
                     webBuilder.UseStartup<Startup>();
                 })
                 .ConfigureLogging(logging =>
-            {
-                // clear default logging providers
-                logging.ClearProviders();
+                {
+                    // clear default logging providers
+                    logging.ClearProviders();
 
-                // add built-in providers manually, as needed 
-                logging.AddConsole();
-                logging.AddDebug();
-                logging.AddEventLog();
-                logging.AddEventSourceLogger();
+                    // add built-in providers manually, as needed 
+                    logging.AddAzureWebAppDiagnostics();
+                    logging.AddConsole();
+                    logging.AddDebug();
+                    logging.AddEventLog();
+                    logging.AddEventSourceLogger();
 
-                // logging.AddTraceSource(sourceSwitchName); 
-            });
+                    // logging.AddTraceSource(sourceSwitchName); 
+                });
     }
 }

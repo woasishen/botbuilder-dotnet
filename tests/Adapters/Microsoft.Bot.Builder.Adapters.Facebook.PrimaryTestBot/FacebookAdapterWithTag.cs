@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Builder.Adapters.Facebook.TestBot;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.BotBuilderSamples.DialogRootBot.Middleware;
@@ -17,6 +18,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(configuration, options, logger)
         {
+            Program.WriteToLog("Debug 2 FacebookAdapterWithTag");
             logger.LogInformation("Debug 2");
             Use(new LoggerMiddleware(logger));
         }
@@ -24,6 +26,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(facebookClient, options, logger)
         {
+            Program.WriteToLog("Debug 3 FacebookAdapterWithTag");
             logger.LogInformation("Debug 3");
             Use(new LoggerMiddleware(logger));
         }

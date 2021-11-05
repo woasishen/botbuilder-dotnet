@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder.Adapters.Facebook.FacebookEvents;
 using Microsoft.Bot.Builder.Adapters.Facebook.FacebookEvents.Handover;
+
+//using Microsoft.Bot.Builder.Adapters.Facebook.TestBot;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
@@ -236,6 +238,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 return;
             }
 
+            //Program.WriteToLog("Debug 1 ProcessAsync");
             System.Diagnostics.Trace.TraceInformation("Debug 1");
             string stringifiedBody;
 

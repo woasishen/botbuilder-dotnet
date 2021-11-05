@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot;
 using Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
 {
@@ -22,6 +23,16 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
 
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
             services.AddTransient<IBot, PrimaryBot>();
+
+            services.Configure<AzureFileLoggerOptions>(options =>
+            {
+                options.FileName = "azure-diagnostics-";
+                options.FileSizeLimit = 50 * 1024;
+                options.RetainedFileCountLimit = 5;
+            }).Configure<AzureBlobLoggerOptions>(options =>
+            {
+                options.BlobName = "log.txt";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
