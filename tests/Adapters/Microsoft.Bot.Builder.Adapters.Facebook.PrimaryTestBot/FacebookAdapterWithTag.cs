@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.BotBuilderSamples.DialogRootBot.Middleware;
 using Microsoft.Extensions.Configuration;
@@ -13,18 +14,18 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
     /// </summary>
     public class FacebookAdapterWithTag : FacebookAdapter
     {
-        public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger logger = null)
+        public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(configuration, options, logger)
         {
-            System.Diagnostics.Trace.TraceInformation("Debug 2");
-            Use(new LoggerMiddleware());
+            logger.LogInformation("Debug 2");
+            Use(new LoggerMiddleware(logger));
         }
 
-        public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger logger = null)
+        public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(facebookClient, options, logger)
         {
-            System.Diagnostics.Trace.TraceInformation("Debug 3");
-            Use(new LoggerMiddleware());
+            logger.LogInformation("Debug 3");
+            Use(new LoggerMiddleware(logger));
         }
 
         protected override FacebookMessage CreateFacebookMessageFromActivity(Activity activity)

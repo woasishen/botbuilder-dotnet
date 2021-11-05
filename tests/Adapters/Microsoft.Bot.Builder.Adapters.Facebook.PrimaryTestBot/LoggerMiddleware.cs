@@ -3,11 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Activity = Microsoft.Bot.Schema.Activity;
 
 namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 {
@@ -16,6 +20,13 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
     /// </summary>
     public class LoggerMiddleware : IMiddleware
     {
+        private readonly ILogger<BotFrameworkHttpAdapter> _logger;
+
+        public LoggerMiddleware(ILogger<BotFrameworkHttpAdapter> logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
         {
             // Register outgoing handler.
@@ -25,12 +36,12 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
             await next(cancellationToken);
         }
 
-        private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Bot.Schema.Activity> activities, Func<Task<ResourceResponse[]>> next)
+        private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Activity> activities, Func<Task<ResourceResponse[]>> next)
         {
-            System.Diagnostics.Trace.TraceInformation("Debug 5 OutgoingHandler");
+            _logger.LogInformation("Debug 5 OutgoingHandler");
             foreach (var activity in activities)
             {
-                System.Diagnostics.Trace.TraceInformation(JsonConvert.SerializeObject(activity, Formatting.Indented));
+                _logger.LogInformation(JsonConvert.SerializeObject(activity, Formatting.Indented));
             }
 
             return await next();
