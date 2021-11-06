@@ -21,7 +21,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
             _logger = loggerF.CreateLogger<Program>();
 
             host.Run();
-            Program.WriteToLog("Debug 0 Main");
+            Program.WriteToLog("Debug 16 Main");
         }
 
         public static void WriteToLog(string message)

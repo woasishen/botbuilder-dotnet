@@ -18,16 +18,16 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot
         public FacebookAdapterWithTag(IConfiguration configuration, FacebookAdapterOptions options = null, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(configuration, options, logger)
         {
-            Program.WriteToLog("Debug 2 FacebookAdapterWithTag");
-            logger.LogInformation("Debug 2");
+            Program.WriteToLog("Debug 3 FacebookAdapterWithTag");
+            logger.LogInformation("Debug 3");
             Use(new LoggerMiddleware(logger));
         }
 
         public FacebookAdapterWithTag(FacebookClientWrapper facebookClient, FacebookAdapterOptions options, ILogger<BotFrameworkHttpAdapter> logger = null)
             : base(facebookClient, options, logger)
         {
-            Program.WriteToLog("Debug 3 FacebookAdapterWithTag");
-            logger.LogInformation("Debug 3");
+            Program.WriteToLog("Debug 4 FacebookAdapterWithTag");
+            logger.LogInformation("Debug 4");
             Use(new LoggerMiddleware(logger));
         }
 

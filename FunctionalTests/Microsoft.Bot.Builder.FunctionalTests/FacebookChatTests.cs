@@ -28,7 +28,7 @@ namespace Microsoft.Bot.Builder.FunctionalTests
         public async Task SendAndReceiveFacebookMessageShouldSucceed()
         {
             GetEnvironmentVars();
-            System.Diagnostics.Trace.TraceInformation("Debug 6");
+            System.Diagnostics.Trace.TraceInformation("Debug 6 SendAndReceiveTest");
 
             // Clear the message queue in case of an old message.
             await ReceiveMessageAsync();

@@ -25,14 +25,14 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 
         public LoggerMiddleware(ILogger<BotFrameworkHttpAdapter> logger)
         {
-            Program.WriteToLog("Debug 1 LoggerMiddleware");
+            Program.WriteToLog("Debug 13 LoggerMiddleware");
 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
         {
-            Program.WriteToLog("Debug 2 OnTurnAsync");
+            Program.WriteToLog("Debug 14 OnTurnAsync");
 
             // Register outgoing handler.
             turnContext.OnSendActivities(OutgoingHandler);
@@ -43,11 +43,11 @@ namespace Microsoft.BotBuilderSamples.DialogRootBot.Middleware
 
         private async Task<ResourceResponse[]> OutgoingHandler(ITurnContext turnContext, List<Activity> activities, Func<Task<ResourceResponse[]>> next)
         {
-            Program.WriteToLog("Debug 5.0 OutgoingHandler");
-            _logger.LogInformation("Debug 5 OutgoingHandler");
+            Program.WriteToLog("Debug 15 OutgoingHandler");  // This logger output is visible in Azure log stream.
+            _logger.LogInformation("Debug 15xx OutgoingHandler");  // This logger output is not visible.
             foreach (var activity in activities)
             {
-                _logger.LogInformation(JsonConvert.SerializeObject(activity, Formatting.Indented));
+                Program.WriteToLog(JsonConvert.SerializeObject(activity, Formatting.Indented));
             }
 
             return await next();

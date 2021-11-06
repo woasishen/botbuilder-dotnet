@@ -47,7 +47,6 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
             else if (turnContext.Activity.GetChannelData<FacebookMessage>().IsStandby)
             {
                 Program.WriteToLog("Debug 8 OnMessageActivityAsync");
-                System.Diagnostics.Trace.TraceInformation("Debug 8");
                 if ((turnContext.Activity as Activity)?.Text == "Invoke a take")
                 {
                     var activity = MessageFactory.Text("Hi! I'm the primary bot!");
@@ -63,7 +62,6 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
                 IActivity activity;
 
                 Program.WriteToLog("Debug 9 OnMessageActivityAsync");
-                System.Diagnostics.Trace.TraceInformation("Debug 9");
                 var messageText = turnContext.Activity.Text.ToLowerInvariant();
 
                 switch (messageText)
@@ -116,18 +114,15 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.Bots
                         break;
                     default:
                         Program.WriteToLog("Debug 10 OnMessageActivityAsync");
-                        System.Diagnostics.Trace.TraceInformation("Debug 10");
                         activity = MessageFactory.Text($"Echo: {turnContext.Activity.Text}");
                         break;
                 }
 
                 Program.WriteToLog("Debug 11 OnMessageActivityAsync");
-                System.Diagnostics.Trace.TraceInformation("Debug 11");
 
                 await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
 
                 Program.WriteToLog("Debug 12 OnMessageActivityAsync");
-                System.Diagnostics.Trace.TraceInformation("Debug 12");
             }
         }
 

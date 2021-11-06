@@ -238,8 +238,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 return;
             }
 
-            //Program.WriteToLog("Debug 1 ProcessAsync");
-            System.Diagnostics.Trace.TraceInformation("Debug 1");
+            System.Diagnostics.Trace.TraceInformation("Debug 1 ProcessAsync"); // Not visible.
             string stringifiedBody;
 
             using (var sr = new StreamReader(httpRequest.Body))
@@ -253,7 +252,7 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook
                 throw new AuthenticationException("Webhook received message with invalid signature. Potential malicious behavior!");
             }
 
-            System.Diagnostics.Trace.TraceInformation("Debug 4");
+            System.Diagnostics.Trace.TraceInformation("Debug 2 ProcessAsync");
             FacebookResponseEvent facebookResponseEvent = null;
 
             facebookResponseEvent = JsonConvert.DeserializeObject<FacebookResponseEvent>(stringifiedBody);
