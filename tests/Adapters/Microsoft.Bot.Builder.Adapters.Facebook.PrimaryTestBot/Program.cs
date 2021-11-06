@@ -14,11 +14,9 @@ namespace Microsoft.Bot.Builder.Adapters.Facebook.TestBot
 
             var loggerF = LoggerFactory.Create(builder =>
             {
-                builder.AddFilter("BlazorDiceRoller", LogLevel.Information)
+                builder
                 .AddConsole()
-                .AddAzureWebAppDiagnostics()
-                .AddFilter("Microsoft", LogLevel.Information)
-                .AddFilter("System", LogLevel.Information);
+                .AddAzureWebAppDiagnostics();
             });
             _logger = loggerF.CreateLogger<Program>();
 
