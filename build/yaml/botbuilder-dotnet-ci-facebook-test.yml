@@ -102,6 +102,7 @@ steps:
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
     verbosityRestore: 'Detailed'
+  enabled: false
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet publish testbot'
@@ -109,7 +110,7 @@ steps:
     command: publish
     publishWebProjects: false
     projects: '$(System.DefaultWorkingDirectory)\tests\Adapters\Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot\Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot.csproj'
-    arguments: '--configuration $(BuildConfiguration) --output $(System.DefaultWorkingDirectory)\tests\Adapters\Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot\PublishedBot -p:TreatWarningsAsErrors=false -p:RestoreUseSkipNonexistentTargets=false'
+    arguments: '--configuration $(BuildConfiguration) --output $(System.DefaultWorkingDirectory)\tests\Adapters\Microsoft.Bot.Builder.Adapters.Facebook.PrimaryTestBot\PublishedBot -p:TreatWarningsAsErrors=false'
     modifyOutputPath: false
 
 - task: AzureCLI@2
