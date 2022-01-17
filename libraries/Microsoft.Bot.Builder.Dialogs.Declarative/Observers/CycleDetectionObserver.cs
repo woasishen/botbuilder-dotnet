@@ -51,7 +51,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Observers
         public bool OnBeforeLoadToken<T>(SourceContext context, SourceRange range, JToken token, out T result)
             where T : class
         {
-            // var sw = new StopwatchPlus($"{GetType().Name}.OnBeforeLoadToken<T>({range}, {CycleDetectionPass})");
+            var sw = new StopwatchPlus($"{GetType().Name}.OnBeforeLoadToken<T>({range}, {CycleDetectionPass})");
 
             // The deep hash code provides a pseudo-unique id for a given token.
             // The token is characterized for the source range and the type expected for that source range.
@@ -69,7 +69,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Observers
             if (isCycle && CycleDetectionPass == CycleDetectionPasses.PassOne)
             {
                 // If we found a cycle, stop iterating and set the value to null in pass 1.
-                // sw.Stop("Found cycle");
+                sw.Stop("Found cycle");
                 result = null;
                 return true;
             }
@@ -94,13 +94,13 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Observers
                         result = null;
                     }
 
-                    // sw.Stop("Found cycle");
+                    sw.Stop("Found cycle");
                     return true;
                 }
             }
 
             // When no cycle was detected, we return false to avoid interfering with regular loading.
-            // sw.Stop("Cycle not found");
+            sw.Stop("Cycle not found");
             result = null;
             return false;
         }
