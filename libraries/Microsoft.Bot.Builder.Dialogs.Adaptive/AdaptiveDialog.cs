@@ -874,6 +874,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
             {
                 lock (this.syncLock)
                 {
+                    var stopwatch = new StopwatchPlus($"{GetType().Name}.EnsureDependenciesInstalled({Id})", $"Installing dependencies...");
                     if (!installedDependencies)
                     {
                         installedDependencies = true;
@@ -914,6 +915,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
                         }
 
                         this.Selector.Initialize(Triggers, evaluate: true);
+                        stopwatch.Stop();
                     }
                 }
             }

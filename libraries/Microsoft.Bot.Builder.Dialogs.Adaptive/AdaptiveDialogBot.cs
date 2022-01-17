@@ -95,6 +95,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
         /// <inheritdoc/>
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
+            var sw = new StopwatchPlus($"{GetType().Name}.OnTurnAsync()");
             _logger.LogInformation($"IBot.OnTurnContext for AdaptiveDialog '{_adaptiveDialogId}'");
 
             using (var botFrameworkClient = _botFrameworkAuthentication.CreateBotFrameworkClient())
@@ -112,6 +113,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
                 await turnContext.TurnState.Get<ConversationState>().SaveChangesAsync(turnContext, false, cancellationToken).ConfigureAwait(false);
                 await turnContext.TurnState.Get<UserState>().SaveChangesAsync(turnContext, false, cancellationToken).ConfigureAwait(false);
             }
+
+            sw.Stop();
         }
 
         private async Task SetUpTurnStateAsync(ITurnContext turnContext, BotFrameworkClient botFrameworkClient)
@@ -150,6 +153,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
 
         private async Task<Dialog> CreateDialogAsync()
         {
+            var stopwatch = new StopwatchPlus($"{GetType().Name}.CreateDialogAsync()", $"Loading {_adaptiveDialogId}");
             if (!_resourceExplorer.TryGetResource(_adaptiveDialogId, out var adaptiveDialogResource))
             {
                 var msg = $"The ResourceExplorer could not find a resource with id '{_adaptiveDialogId}'";
@@ -165,6 +169,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive
                 adaptiveDialog.Dialogs.Add(dialog);
             }
 
+            stopwatch.Stop();
             return adaptiveDialog;
         }
 

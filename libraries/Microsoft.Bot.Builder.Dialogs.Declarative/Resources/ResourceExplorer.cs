@@ -212,7 +212,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
         public async Task<T> LoadTypeAsync<T>(Resource resource, CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
         {
+            var stopwatch = new StopwatchPlus($"{GetType().Name}.LoadTypeAsync<{typeof(T).Name}>()", "Register component types");
             RegisterComponentTypes();
+            stopwatch.Elapsed("finished registering components");
 
             string id = resource.Id;
 
@@ -224,6 +226,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
                 using (new SourceScope(sourceContext, range))
                 {
                     var result = Load<T>(jToken, sourceContext);
+                    stopwatch.Stop();
                     return result;
                 }
             }
@@ -673,11 +676,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
         private T Load<T>(JToken token, SourceContext sourceContext)
         {
             var converters = new List<JsonConverter>();
-
+            
             // The current pattern is that converters are registered through calling `resourceExplorer.RegisterConverterFactory()`,
             // however legacy converters were registered through component registration.
 
             // Add converters from registered factories to support the new pattern.
+            var stopwatch = new StopwatchPlus($"{GetType().Name}.Load<{typeof(T).Name}>() token id is {((JValue)token["id"]).Value}", $"Loading {converterFactories.Count} factories");
             foreach (var factory in converterFactories)
             {
                 var converter = factory.Build(this, sourceContext);
@@ -689,6 +693,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             }
 
             // Add component registration converters to the converters collection to support legacy patterns.
+            stopwatch.Restart("done. Now adding component registrations");
             foreach (var component in GetComponentRegistrations())
             {
                 var result = component.GetConverters(this, sourceContext);
@@ -699,14 +704,17 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             }
 
             // Create a cycle detection observer
+            stopwatch.Restart("done. Creating cycle detectors");
             var cycleDetector = new CycleDetectionObserver(options.AllowCycles);
 
             // Register our cycle detector on the converters that support observer registration
             foreach (var observableConverter in converters.Where(c => c is IObservableJsonConverter))
             {
+                Console.WriteLine($"Converter {observableConverter.GetType()}");
                 (observableConverter as IObservableJsonConverter).RegisterObserver(cycleDetector);
             }
 
+            stopwatch.Restart("done. Cycle detection pass 1 of 2");
             var serializer = JsonSerializer.Create(new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.Auto,
@@ -730,7 +738,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             // Pass 2 of cycle detection. This pass stitches objects from the cache into the places
             // where we found cycles.
 
-            return token.ToObject<T>(serializer);
+            stopwatch.Restart("done. Cycle detection pass 2 of 2");
+            var load = token.ToObject<T>(serializer);
+            stopwatch.Stop();
+            return load;
         }
 
         private void ResourceProvider_Changed(object sender, IEnumerable<Resource> resources)

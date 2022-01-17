@@ -115,7 +115,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             foreach (var resource in resources)
             {
                 LanguageGenerators[resource.Id] = new Lazy<LanguageGenerator>(() =>
-                 new TemplateEngineLanguageGenerator(resource, _multilanguageResources));
+                    {
+                        var sw = new StopwatchPlus($"{GetType().Name}.LazyLoad({resource.Id})");
+                        var generator = new TemplateEngineLanguageGenerator(resource, _multilanguageResources);
+                        sw.Stop();
+                        return generator;
+                    });
             }
         }
 
