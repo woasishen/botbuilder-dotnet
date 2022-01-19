@@ -681,7 +681,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             // however legacy converters were registered through component registration.
 
             // Add converters from registered factories to support the new pattern.
-            var stopwatch = new StopwatchPlus($"{GetType().Name}.Load<{typeof(T).Name}>() token id is {((JValue)token["id"]).Value}", $"Loading {converterFactories.Count} factories");
+            var stopwatch = new StopwatchPlus($"{GetType().Name}.Load<{typeof(T).Name}>()", $"Loading {converterFactories.Count} factories");
             foreach (var factory in converterFactories)
             {
                 var converter = factory.Build(this, sourceContext);
@@ -696,7 +696,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             stopwatch.Restart("done. Now adding component registrations");
             foreach (var component in GetComponentRegistrations())
             {
-                var result = component.GetConverters(this, sourceContext);
+                var result = component.GetConverters(this, sourceContext).ToList();
                 if (result.Any())
                 {
                     converters.AddRange(result);
@@ -710,8 +710,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
             // Register our cycle detector on the converters that support observer registration
             foreach (var observableConverter in converters.Where(c => c is IObservableJsonConverter))
             {
-                Console.WriteLine($"Converter {observableConverter.GetType()}");
-                (observableConverter as IObservableJsonConverter).RegisterObserver(cycleDetector);
+                ((IObservableJsonConverter)observableConverter).RegisterObserver(cycleDetector);
             }
 
             stopwatch.Restart("done. Cycle detection pass 1 of 2");
