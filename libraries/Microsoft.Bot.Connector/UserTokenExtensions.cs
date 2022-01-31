@@ -97,5 +97,23 @@ namespace Microsoft.Bot.Connector
                     return result.Body;
                 }
             }
+
+            /// <summary> Store. </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='userId'> User ID. </param>
+            /// <param name='connectionName'> Connection name. </param>
+            /// <param name='channelId'> Channel ID. </param>
+            /// <param name='storeRequest'> Store request. </param>
+            /// <param name='cancellationToken'> The cancellation token. </param>
+            /// <returns> A task that represents the work queued to execute. </returns>
+            public static async Task<object> StoreTokenAsync(this OAuthClient operations, string userId, string connectionName, string channelId, TokenStoreRequest storeRequest, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var result = await operations.StoreAsyncWithHttpMessagesAsync(userId, connectionName, channelId, storeRequest, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return result.Body;
+                }
+            }
     }
 }

@@ -79,6 +79,17 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         public abstract Task<TokenResponse> ExchangeTokenAsync(string userId, string connectionName, string channelId, TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Performs a token storage operation during token sharing.
+        /// </summary>
+        /// <param name="userId">The user id that will be associated with the token.</param>
+        /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="channelId">The channel Id that will be associated with the token.</param>
+        /// <param name="storeRequest">The store request details with a token.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public abstract Task<TokenResponse> StoreTokenAsync(string userId, string connectionName, string channelId, TokenStoreRequest storeRequest, CancellationToken cancellationToken);
+
         /// <inheritdoc/>
         public void Dispose()
         {

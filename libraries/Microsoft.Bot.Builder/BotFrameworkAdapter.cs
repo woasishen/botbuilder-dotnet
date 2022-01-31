@@ -46,7 +46,7 @@ namespace Microsoft.Bot.Builder
     /// <seealso cref="IBot"/>
     /// <seealso cref="IMiddleware"/>h
     [Obsolete("Use `CloudAdapter` instead.", false)]
-    public class BotFrameworkAdapter : BotAdapter, IAdapterIntegration, IExtendedUserTokenProvider, IConnectorClientBuilder
+    public class BotFrameworkAdapter : BotAdapter, IAdapterIntegration, IExtendedUserTokenProvider, IStoreTokenProvider, IConnectorClientBuilder
     {
         private static readonly HttpClient DefaultHttpClient = new HttpClient();
 
@@ -1186,6 +1186,77 @@ namespace Microsoft.Bot.Builder
 
             var client = await CreateOAuthApiClientAsync(turnContext, oAuthAppCredentials).ConfigureAwait(false);
             var result = await client.ExchangeAsyncAsync(userId, connectionName, turnContext.Activity.ChannelId, exchangeRequest, cancellationToken).ConfigureAwait(false);
+
+            if (result is ErrorResponse errorResponse)
+            {
+                LogAndThrowException(new InvalidOperationException($"Unable to exchange token: ({errorResponse?.Error?.Code}) {errorResponse?.Error?.Message}"));
+            }
+
+            if (result is TokenResponse tokenResponse)
+            {
+                return tokenResponse;
+            }
+
+            LogAndThrowException(new InvalidOperationException($"ExchangeAsyncAsync returned improper result: {result.GetType()}"));
+
+            // even though LogAndThrowException always throws, compiler gives an error about not all code paths returning a value.
+            return null;
+        }
+
+        /// <summary>
+        /// Store a token operation.
+        /// </summary>
+        /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
+        /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="userId">The user id associated with the token.</param>
+        /// <param name="storeRequest">The store request details with the token.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>If the task completes, the exchanged token is returned.</returns>
+        public virtual Task<TokenResponse> StoreTokenAsync(ITurnContext turnContext, string connectionName, string userId, TokenStoreRequest storeRequest, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return StoreTokenAsync(turnContext, null, connectionName, userId, storeRequest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Store a token operation.
+        /// </summary>
+        /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
+        /// <param name="oAuthAppCredentials">AppCredentials for OAuth.</param>
+        /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="userId">The user id associated with the token.</param>
+        /// <param name="storeRequest">The store request details with the token.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>If the task completes, the exchanged token is returned.</returns>
+        public virtual async Task<TokenResponse> StoreTokenAsync(ITurnContext turnContext, AppCredentials oAuthAppCredentials, string connectionName, string userId, TokenStoreRequest storeRequest, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            BotAssert.ContextNotNull(turnContext);
+
+            if (string.IsNullOrWhiteSpace(connectionName))
+            {
+                LogAndThrowException(new ArgumentException($"{nameof(connectionName)} is null or empty", nameof(connectionName)));
+            }
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                LogAndThrowException(new ArgumentException($"{nameof(userId)} is null or empty", nameof(userId)));
+            }
+
+            if (storeRequest == null)
+            {
+                LogAndThrowException(new ArgumentException($"{nameof(storeRequest)} is null or empty", nameof(storeRequest)));
+            }
+
+            if (string.IsNullOrWhiteSpace(storeRequest.Token))
+            {
+                LogAndThrowException(new ArgumentException("A Token is required on the TokenStoreRequest", nameof(storeRequest)));
+            }
+
+            var activity = turnContext.Activity;
+
+            var client = await CreateOAuthApiClientAsync(turnContext, oAuthAppCredentials).ConfigureAwait(false);
+            var result = await client.StoreTokenAsync(userId, connectionName, turnContext.Activity.ChannelId, storeRequest, cancellationToken).ConfigureAwait(false);
 
             if (result is ErrorResponse errorResponse)
             {

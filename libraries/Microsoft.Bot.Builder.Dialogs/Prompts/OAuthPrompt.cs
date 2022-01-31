@@ -298,7 +298,7 @@ namespace Microsoft.Bot.Builder.Dialogs
                         {
                             Id = tokenExchangeRequest.Id,
                             ConnectionName = settings.ConnectionName,
-                            FailureDetail = "The bot received an InvokeActivity with a TokenExchangeInvokeRequest containing a ConnectionName that does not match the ConnectionName expected by the bot's active OAuthPrompt. Ensure these names match when sending the InvokeActivityInvalid ConnectionName in the TokenExchangeInvokeRequest",
+                            FailureDetail = "The bot received an InvokeActivity with a TokenExchangeInvokeRequest containing a ConnectionName that does not match the ConnectionName expected by the bot's active OAuthPrompt. Ensure these names match when sending the InvokeActivity",
                         }, cancellationToken).ConfigureAwait(false);
                 }
                 else
@@ -347,6 +347,91 @@ namespace Microsoft.Bot.Builder.Dialogs
                             ConnectionName = tokenExchangeResponse.ConnectionName,
                             Token = tokenExchangeResponse.Token,
                         };
+                    }
+                }
+            }
+            else if (IsTokenShareRequestInvoke(turnContext))
+            {
+                var request = ((JObject)turnContext.Activity.Value)?.ToObject<TokenShareInvokeRequest>();
+
+                if (request == null)
+                {
+                    await SendInvokeResponseAsync(
+                        turnContext,
+                        HttpStatusCode.BadRequest,
+                        new TokenShareInvokeResponse
+                        {
+                            Id = null,
+                            ConnectionName = settings.ConnectionName,
+                            FailureDetail = "The bot received an InvokeActivity that is missing a TokenShareInvokeRequest value. This is required to be sent with the InvokeActivity.",
+                        }, cancellationToken).ConfigureAwait(false);
+                }
+                else if (request.ConnectionName != settings.ConnectionName)
+                {
+                    await SendInvokeResponseAsync(
+                        turnContext,
+                        HttpStatusCode.BadRequest,
+                        new TokenShareInvokeResponse
+                        {
+                            Id = request.Id,
+                            ConnectionName = settings.ConnectionName,
+                            FailureDetail = "The bot received an InvokeActivity with a TokenShareInvokeRequest containing a ConnectionName that does not match the ConnectionName expected by the bot's active OAuthPrompt. Ensure these names match when sending the InvokeActivity",
+                        }, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    var isTokenStored = false;
+                    try
+                    {
+                        // TODO: store the token
+                        var response = await UserTokenAccess.StoreTokenAsync(
+                            turnContext,
+                            settings,
+                            new TokenStoreRequest
+                            {
+                                Token = request.Token,
+                                RefreshToken = request.RefreshToken
+                            },
+                            cancellationToken).ConfigureAwait(false);
+
+                        isTokenStored = true;
+                    }
+                    catch (Exception)
+                    {
+                        isTokenStored = false;
+                    }
+
+                    if (isTokenStored)
+                    {
+                        await SendInvokeResponseAsync(
+                            turnContext,
+                            HttpStatusCode.OK,
+                            new TokenShareInvokeResponse
+                            {
+                                Id = request.Id,
+                                ConnectionName = settings.ConnectionName,
+                            }, cancellationToken).ConfigureAwait(false);
+
+                        // return the shared token
+                        result.Succeeded = true;
+                        result.Value = new TokenResponse
+                        {
+                            ChannelId = turnContext.Activity.ChannelId,
+                            ConnectionName = request.ConnectionName,
+                            Token = request.Token,
+                        };
+                    }
+                    else
+                    {
+                        await SendInvokeResponseAsync(
+                            turnContext,
+                            HttpStatusCode.InternalServerError,
+                            new TokenShareInvokeResponse
+                            {
+                                Id = request.Id,
+                                ConnectionName = settings.ConnectionName,
+                                FailureDetail = "The bot is unable to store the shared token.",
+                            }, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -585,6 +670,12 @@ namespace Microsoft.Bot.Builder.Dialogs
         {
             var activity = turnContext.Activity;
             return activity.Type == ActivityTypes.Invoke && activity.Name == SignInConstants.TokenExchangeOperationName;
+        }
+
+        private static bool IsTokenShareRequestInvoke(ITurnContext turnContext)
+        {
+            var activity = turnContext.Activity;
+            return activity.Type == ActivityTypes.Invoke && activity.Name == SignInConstants.TokenShareOperationName;
         }
 
         private static bool ChannelSupportsOAuthCard(string channelId)

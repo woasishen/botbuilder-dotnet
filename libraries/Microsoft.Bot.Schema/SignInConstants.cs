@@ -25,6 +25,14 @@ namespace Microsoft.Bot.Schema
         public const string TokenExchangeOperationName = "signin/tokenExchange";
 
         /// <summary>
+        /// Name for signin invoke to perform a token share with the bot.
+        /// </summary>
+        /// <remarks>
+        /// This invoke operation includes a value of the token share class.
+        /// </remarks>
+        public const string TokenShareOperationName = "signin/tokenShare";
+
+        /// <summary>
         /// The EventActivity name when a token is sent to the bot.
         /// </summary>
         public const string TokenResponseEventName = "tokens/response";

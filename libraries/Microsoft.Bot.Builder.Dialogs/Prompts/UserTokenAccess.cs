@@ -84,6 +84,25 @@ namespace Microsoft.Bot.Builder.Dialogs
             }
         }
 
+        public static async Task<TokenResponse> StoreTokenAsync(ITurnContext turnContext, OAuthPromptSettings settings, TokenStoreRequest tokenStoreRequest, CancellationToken cancellationToken)
+        {
+            var userTokenClient = turnContext.TurnState.Get<UserTokenClient>();
+            if (userTokenClient != null)
+            {
+                var userId = turnContext.Activity.From.Id;
+                var channelId = turnContext.Activity.ChannelId;
+                return await userTokenClient.StoreTokenAsync(userId, settings.ConnectionName, channelId, tokenStoreRequest, cancellationToken).ConfigureAwait(false);
+            }
+            else if (turnContext.Adapter is IStoreTokenProvider adapter)
+            {
+                return await adapter.StoreTokenAsync(turnContext, settings.ConnectionName, turnContext.Activity.From.Id, tokenStoreRequest, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                throw new NotSupportedException("OAuth prompt is not supported by the current adapter");
+            }
+        }
+
         public static async Task<IConnectorClient> CreateConnectorClientAsync(ITurnContext turnContext, string serviceUrl, ClaimsIdentity claimsIdentity, string audience, CancellationToken cancellationToken)
         {
             var connectorFactory = turnContext.TurnState.Get<ConnectorFactory>();

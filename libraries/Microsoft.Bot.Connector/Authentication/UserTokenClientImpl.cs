@@ -142,6 +142,33 @@ namespace Microsoft.Bot.Connector.Authentication
             }
         }
 
+        public override async Task<TokenResponse> StoreTokenAsync(string userId, string connectionName, string channelId, TokenStoreRequest storeRequest, CancellationToken cancellationToken)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(StoreTokenAsync));
+            }
+
+            _ = userId ?? throw new ArgumentNullException(nameof(userId));
+            _ = connectionName ?? throw new ArgumentNullException(nameof(connectionName));
+
+            _logger.LogInformation($"StoreTokenAsync ConnectionName: {connectionName}");
+            var result = await _client.StoreTokenAsync(userId, connectionName, channelId, storeRequest, cancellationToken).ConfigureAwait(false);
+
+            if (result is ErrorResponse errorResponse)
+            {
+                throw new InvalidOperationException($"Unable to store token: ({errorResponse?.Error?.Code}) {errorResponse?.Error?.Message}");
+            }
+            else if (result is TokenResponse tokenResponse)
+            {
+                return tokenResponse;
+            }
+            else
+            {
+                throw new InvalidOperationException($"StoreTokenAsync returned improper result: {result.GetType()}");
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
