@@ -18,9 +18,10 @@ namespace Microsoft.Bot.Builder.Adapters
     /// A mock adapter that can be used for unit testing of bot logic.
     /// </summary>
     /// <seealso cref="TestFlow"/>
-    public class TestAdapter : BotAdapter, IExtendedUserTokenProvider
+    public class TestAdapter : BotAdapter, IExtendedUserTokenProvider, IStoreTokenProvider
     {
         private const string ExceptionExpected = "ExceptionExpected";
+        private const string NullExpected = "NullExpected";
 
         private bool _sendTraceActivity;
         private readonly object _conversationLock = new object();
@@ -28,7 +29,7 @@ namespace Microsoft.Bot.Builder.Adapters
         private readonly IDictionary<UserTokenKey, string> _userTokens = new Dictionary<UserTokenKey, string>();
         private readonly IDictionary<ExchangableTokenKey, string> _exchangableToken = new Dictionary<ExchangableTokenKey, string>();
         private readonly IList<TokenMagicCode> _magicCodes = new List<TokenMagicCode>();
-
+        private string _nextTokenShare = null;
         private int _nextId = 0;
         private Queue<TaskCompletionSource<IActivity>> _queuedRequests = new Queue<TaskCompletionSource<IActivity>>();
 
@@ -554,6 +555,22 @@ namespace Microsoft.Bot.Builder.Adapters
             }
         }
 
+        /// <summary>
+        /// Tells the TestAdapter to throw an exception on the next call to Token Share.
+        /// </summary>
+        public void ThrowOnShareRequest()
+        {
+            _nextTokenShare = ExceptionExpected;
+        }
+
+        /// <summary>
+        /// Tells the TestAdapter to return null on the next call to Token Share.
+        /// </summary>
+        public void ReturnNullOnShareRequest()
+        {
+            _nextTokenShare = NullExpected;
+        }
+
         /// <summary>Attempts to retrieve the token for a user that's in a login flow, using customized AppCredentials.
         /// </summary>
         /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
@@ -883,7 +900,65 @@ namespace Microsoft.Bot.Builder.Adapters
                 return Task.FromResult<TokenResponse>(null);
             }
         }
-        
+
+        /// <summary>
+        /// Store a token operation.
+        /// </summary>
+        /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
+        /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="userId">The user id associated with the token.</param>
+        /// <param name="storeRequest">The store request details with the token.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>If the task completes, the exchanged token is returned.</returns>
+        public Task<TokenResponse> StoreTokenAsync(ITurnContext turnContext, string connectionName, string userId, TokenStoreRequest storeRequest, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return StoreTokenAsync(turnContext, null, connectionName, userId, storeRequest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Store a token operation.
+        /// </summary>
+        /// <param name="turnContext">Context for the current turn of conversation with the user.</param>
+        /// <param name="oAuthAppCredentials">AppCredentials for OAuth.</param>
+        /// <param name="connectionName">Name of the auth connection to use.</param>
+        /// <param name="userId">The user id associated with the token.</param>
+        /// <param name="storeRequest">The store request details with the token.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>If the task completes, the exchanged token is returned.</returns>
+        public Task<TokenResponse> StoreTokenAsync(ITurnContext turnContext, AppCredentials oAuthAppCredentials, string connectionName, string userId, TokenStoreRequest storeRequest, CancellationToken cancellationToken = default)
+        {
+            var response = new TokenResponse()
+            {
+                ChannelId = turnContext.Activity.ChannelId,
+                ConnectionName = connectionName,
+                Token = _nextTokenShare
+            };
+
+            try
+            {
+                if (string.IsNullOrEmpty(_nextTokenShare))
+                {
+                    response.Token = storeRequest.Token;
+                }
+                else if (string.Equals(ExceptionExpected, _nextTokenShare, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException();
+                }
+                else if (string.Equals(NullExpected, _nextTokenShare, StringComparison.Ordinal))
+                {
+                    response = null;
+                }
+
+                return Task.FromResult(response);
+            }
+            finally
+            {
+                _nextTokenShare = null;
+            }
+        }
+
         /// <summary>
         /// Creates the turn context for the adapter.
         /// </summary>

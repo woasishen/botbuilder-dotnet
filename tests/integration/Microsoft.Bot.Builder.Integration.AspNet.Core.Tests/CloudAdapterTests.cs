@@ -880,6 +880,12 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core.Tests
                 return Task.FromResult(new TokenResponse { });
             }
 
+            public override Task<TokenResponse> StoreTokenAsync(string userId, string connectionName, string channelId, TokenStoreRequest storeRequest, CancellationToken cancellationToken)
+            {
+                Capture(MethodBase.GetCurrentMethod().Name, userId, connectionName, channelId, storeRequest);
+                return Task.FromResult(new TokenResponse { });
+            }
+
             public override Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(string userId, string connectionName, string[] resourceUrls, string channelId, CancellationToken cancellationToken)
             {
                 Capture(MethodBase.GetCurrentMethod().Name, userId, connectionName, resourceUrls, channelId);

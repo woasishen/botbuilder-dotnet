@@ -22,7 +22,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Tests
         private const string MagicCode = "888999";
         private const string Token = "token123";
         private const string ExchangeToken = "exch123";
-        
+        private const string ShareToken = "share123";
+
         [Fact]
         public void OAuthPromptWithEmptySettingsShouldFail()
         {
@@ -534,6 +535,277 @@ namespace Microsoft.Bot.Builder.Dialogs.Tests
                 Assert.NotNull(response);
                 Assert.Equal(400, response.Status);
                 var body = response.Body as TokenExchangeInvokeResponse;
+                Assert.Equal(ConnectionName, body.ConnectionName);
+                Assert.NotNull(body.FailureDetail);
+            })
+            .StartTestAsync();
+        }
+
+        [Fact]
+        public async Task OAuthPromptWithTokenShareInvoke()
+        {
+            var convoState = new ConversationState(new MemoryStorage());
+            var dialogState = convoState.CreateProperty<DialogState>("dialogState");
+
+            var adapter = new TestAdapter()
+                .Use(new AutoSaveStateMiddleware(convoState));
+
+            // Create new DialogSet.
+            var dialogs = new DialogSet(dialogState);
+            dialogs.Add(new OAuthPrompt("OAuthPrompt", new OAuthPromptSettings() { Text = "Please sign in", ConnectionName = ConnectionName, Title = "Sign in" }));
+
+            BotCallbackHandler botCallbackHandler = async (turnContext, cancellationToken) =>
+            {
+                var dc = await dialogs.CreateContextAsync(turnContext, cancellationToken);
+
+                var results = await dc.ContinueDialogAsync(cancellationToken);
+                if (results.Status == DialogTurnStatus.Empty)
+                {
+                    await dc.PromptAsync("OAuthPrompt", new PromptOptions(), cancellationToken: cancellationToken);
+                }
+                else if (results.Status == DialogTurnStatus.Complete)
+                {
+                    if (results.Result is TokenResponse)
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Logged in."), cancellationToken);
+                    }
+                    else
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Failed."), cancellationToken);
+                    }
+                }
+            };
+
+            await new TestFlow(adapter, botCallbackHandler)
+            .Send("hello")
+            .AssertReply(activity =>
+            {
+                Assert.Single(((Activity)activity).Attachments);
+                Assert.Equal(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+                Assert.Equal(InputHints.AcceptingInput, ((Activity)activity).InputHint);
+
+                // Add an exchangable token to the adapter
+                // adapter.AddExchangeableToken(ConnectionName, activity.ChannelId, activity.Recipient.Id, ExchangeToken, Token);
+            })
+            .Send(new Activity()
+            {
+                Type = ActivityTypes.Invoke,
+                Name = SignInConstants.TokenShareOperationName,
+                Value = JObject.FromObject(new TokenShareInvokeRequest()
+                {
+                    ConnectionName = ConnectionName,
+                    Token = ShareToken
+                })
+            })
+            .AssertReply(a =>
+            {
+                Assert.Equal("invokeResponse", a.Type);
+                var response = ((Activity)a).Value as InvokeResponse;
+                Assert.NotNull(response);
+                Assert.Equal(200, response.Status);
+                var body = response.Body as TokenShareInvokeResponse;
+                Assert.Equal(ConnectionName, body.ConnectionName);
+                Assert.Null(body.FailureDetail);
+            })
+            .AssertReply("Logged in.")
+            .StartTestAsync();
+        }
+
+        [Fact]
+        public async Task OAuthPromptWithTokenShareFail()
+        {
+            var convoState = new ConversationState(new MemoryStorage());
+            var dialogState = convoState.CreateProperty<DialogState>("dialogState");
+
+            var adapter = new TestAdapter()
+                .Use(new AutoSaveStateMiddleware(convoState));
+
+            // Create new DialogSet.
+            var dialogs = new DialogSet(dialogState);
+            dialogs.Add(new OAuthPrompt("OAuthPrompt", new OAuthPromptSettings() { Text = "Please sign in", ConnectionName = ConnectionName, Title = "Sign in" }));
+
+            BotCallbackHandler botCallbackHandler = async (turnContext, cancellationToken) =>
+            {
+                var dc = await dialogs.CreateContextAsync(turnContext, cancellationToken);
+
+                var results = await dc.ContinueDialogAsync(cancellationToken);
+                if (results.Status == DialogTurnStatus.Empty)
+                {
+                    await dc.PromptAsync("OAuthPrompt", new PromptOptions(), cancellationToken: cancellationToken);
+                }
+                else if (results.Status == DialogTurnStatus.Complete)
+                {
+                    if (results.Result is TokenResponse)
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Logged in."), cancellationToken);
+                    }
+                    else
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Failed."), cancellationToken);
+                    }
+                }
+            };
+
+            await new TestFlow(adapter, botCallbackHandler)
+            .Send("hello")
+            .AssertReply(activity =>
+            {
+                Assert.Single(((Activity)activity).Attachments);
+                Assert.Equal(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+                Assert.Equal(InputHints.AcceptingInput, ((Activity)activity).InputHint);
+
+                adapter.ReturnNullOnShareRequest();
+            })
+            .Send(new Activity()
+            {
+                Type = ActivityTypes.Invoke,
+                Name = SignInConstants.TokenShareOperationName,
+                Value = JObject.FromObject(new TokenShareInvokeRequest()
+                {
+                    ConnectionName = ConnectionName,
+                    Token = ShareToken
+                })
+            })
+            .AssertReply(a =>
+            {
+                Assert.Equal("invokeResponse", a.Type);
+                var response = ((Activity)a).Value as InvokeResponse;
+                Assert.NotNull(response);
+                Assert.Equal(500, response.Status);
+                var body = response.Body as TokenShareInvokeResponse;
+                Assert.Equal(ConnectionName, body.ConnectionName);
+                Assert.NotNull(body.FailureDetail);
+            })
+            .StartTestAsync();
+        }
+
+        [Fact]
+        public async Task OAuthPromptWithTokenShareNoBodyFails()
+        {
+            var convoState = new ConversationState(new MemoryStorage());
+            var dialogState = convoState.CreateProperty<DialogState>("dialogState");
+
+            var adapter = new TestAdapter()
+                .Use(new AutoSaveStateMiddleware(convoState));
+
+            // Create new DialogSet.
+            var dialogs = new DialogSet(dialogState);
+            dialogs.Add(new OAuthPrompt("OAuthPrompt", new OAuthPromptSettings() { Text = "Please sign in", ConnectionName = ConnectionName, Title = "Sign in" }));
+
+            BotCallbackHandler botCallbackHandler = async (turnContext, cancellationToken) =>
+            {
+                var dc = await dialogs.CreateContextAsync(turnContext, cancellationToken);
+
+                var results = await dc.ContinueDialogAsync(cancellationToken);
+                if (results.Status == DialogTurnStatus.Empty)
+                {
+                    await dc.PromptAsync("OAuthPrompt", new PromptOptions(), cancellationToken: cancellationToken);
+                }
+                else if (results.Status == DialogTurnStatus.Complete)
+                {
+                    if (results.Result is TokenResponse)
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Logged in."), cancellationToken);
+                    }
+                    else
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Failed."), cancellationToken);
+                    }
+                }
+            };
+
+            await new TestFlow(adapter, botCallbackHandler)
+            .Send("hello")
+            .AssertReply(activity =>
+            {
+                Assert.Single(((Activity)activity).Attachments);
+                Assert.Equal(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+                Assert.Equal(InputHints.AcceptingInput, ((Activity)activity).InputHint);
+
+                // No exchangable token is added to the adapter
+            })
+            .Send(new Activity()
+            {
+                Type = ActivityTypes.Invoke,
+                Name = SignInConstants.TokenShareOperationName,
+
+                // send no body
+            })
+            .AssertReply(a =>
+            {
+                Assert.Equal("invokeResponse", a.Type);
+                var response = ((Activity)a).Value as InvokeResponse;
+                Assert.NotNull(response);
+                Assert.Equal(400, response.Status);
+                var body = response.Body as TokenShareInvokeResponse;
+                Assert.Equal(ConnectionName, body.ConnectionName);
+                Assert.NotNull(body.FailureDetail);
+            })
+            .StartTestAsync();
+        }
+
+        [Fact]
+        public async Task OAuthPromptWithTokenShareWrongConnectionNameFail()
+        {
+            var convoState = new ConversationState(new MemoryStorage());
+            var dialogState = convoState.CreateProperty<DialogState>("dialogState");
+
+            var adapter = new TestAdapter()
+                .Use(new AutoSaveStateMiddleware(convoState));
+
+            // Create new DialogSet.
+            var dialogs = new DialogSet(dialogState);
+            dialogs.Add(new OAuthPrompt("OAuthPrompt", new OAuthPromptSettings() { Text = "Please sign in", ConnectionName = ConnectionName, Title = "Sign in" }));
+
+            BotCallbackHandler botCallbackHandler = async (turnContext, cancellationToken) =>
+            {
+                var dc = await dialogs.CreateContextAsync(turnContext, cancellationToken);
+
+                var results = await dc.ContinueDialogAsync(cancellationToken);
+                if (results.Status == DialogTurnStatus.Empty)
+                {
+                    await dc.PromptAsync("OAuthPrompt", new PromptOptions(), cancellationToken: cancellationToken);
+                }
+                else if (results.Status == DialogTurnStatus.Complete)
+                {
+                    if (results.Result is TokenResponse)
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Logged in."), cancellationToken);
+                    }
+                    else
+                    {
+                        await turnContext.SendActivityAsync(MessageFactory.Text("Failed."), cancellationToken);
+                    }
+                }
+            };
+
+            await new TestFlow(adapter, botCallbackHandler)
+            .Send("hello")
+            .AssertReply(activity =>
+            {
+                Assert.Single(((Activity)activity).Attachments);
+                Assert.Equal(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+                Assert.Equal(InputHints.AcceptingInput, ((Activity)activity).InputHint);
+
+                // No exchangable token is added to the adapter
+            })
+            .Send(new Activity()
+            {
+                Type = ActivityTypes.Invoke,
+                Name = SignInConstants.TokenShareOperationName,
+                Value = JObject.FromObject(new TokenShareInvokeRequest()
+                {
+                    ConnectionName = "beepboop",
+                    Token = ShareToken
+                })
+            })
+            .AssertReply(a =>
+            {
+                Assert.Equal("invokeResponse", a.Type);
+                var response = ((Activity)a).Value as InvokeResponse;
+                Assert.NotNull(response);
+                Assert.Equal(400, response.Status);
+                var body = response.Body as TokenShareInvokeResponse;
                 Assert.Equal(ConnectionName, body.ConnectionName);
                 Assert.NotNull(body.FailureDetail);
             })

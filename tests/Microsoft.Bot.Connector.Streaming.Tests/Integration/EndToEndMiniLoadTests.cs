@@ -681,6 +681,11 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                 return Task.FromResult(new TokenResponse());
             }
 
+            public override Task<TokenResponse> StoreTokenAsync(string userId, string connectionName, string channelId, TokenStoreRequest storeRequest, CancellationToken cancellationToken)
+            {
+                return Task.FromResult(new TokenResponse());
+            }
+
             public override Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(string userId, string connectionName, string[] resourceUrls, string channelId, CancellationToken cancellationToken)
             {
                 return Task.FromResult(new Dictionary<string, TokenResponse>());

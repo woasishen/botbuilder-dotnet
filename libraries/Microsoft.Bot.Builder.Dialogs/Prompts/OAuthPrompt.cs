@@ -394,9 +394,11 @@ namespace Microsoft.Bot.Builder.Dialogs
                             },
                             cancellationToken).ConfigureAwait(false);
 
-                        isTokenStored = true;
+                        isTokenStored = response != null && response.Token != null;
                     }
-                    catch (Exception)
+#pragma warning disable CA1031 // Do not catch general exception types (ignoring, see comment below)
+                    catch
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         isTokenStored = false;
                     }
