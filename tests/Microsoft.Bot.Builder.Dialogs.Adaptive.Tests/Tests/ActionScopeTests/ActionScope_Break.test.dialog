@@ -55,11 +55,15 @@
                         "actions": [
                             {
                                 "$kind": "Microsoft.IfCondition",
-                                "condition": "dialog.foreach.index > 2",
+                                "condition": "dialog.foreach.index == 3",
                                 "actions": [
-                                    {
-                                        "$kind": "Microsoft.BreakLoop"
-                                    }
+                                  {
+                                    "$kind": "Microsoft.SendActivity",
+                                    "activity": "breaking loop"
+                                  },  
+                                  {
+                                    "$kind": "Microsoft.BreakLoop"
+                                  }
                                 ]
                             },
                             {
@@ -92,8 +96,12 @@
             "text": "index is: 1 and value is: 2"
         },
         {
+          "$kind": "Microsoft.Test.AssertReply",
+          "text": "index is: 2 and value is: 3"
+        },
+        {
             "$kind": "Microsoft.Test.AssertReply",
-            "text": "index is: 2 and value is: 3"
+            "text": "breaking loop"
         },
         {
             "$kind": "Microsoft.Test.AssertReply",
