@@ -19,7 +19,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Mocks
 
         public bool End { get; private set; }
 
-        protected static JsonSerializer Serializer { get; set; } = JsonSerializer.Create(SerializationSettings.DefaultSerializationSettings);
+        protected static JsonSerializer Serializer { get; set; } = JsonSerializer.Create(SerializationConfig.DefaultSerializeOptions);
 
         public Stream CreateStreamFromPayload() => new MemoryStream();
 

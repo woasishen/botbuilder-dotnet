@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Text.Json.Serialization;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Configuration properties for a connected LUIS Service.
     /// </summary>
@@ -25,35 +25,35 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets appId for the LUIS model.
         /// </summary>
         /// <value>The App Id.</value>
-        [JsonProperty("appId")]
+        [JsonPropertyName("appId")]
         public string AppId { get; set; }
 
         /// <summary>
         /// Gets or sets authoringKey for interacting with service management.
         /// </summary>
         /// <value>The Authoring Key.</value>
-        [JsonProperty("authoringKey")]
+        [JsonPropertyName("authoringKey")]
         public string AuthoringKey { get; set; }
 
         /// <summary>
         /// Gets or sets subscriptionKey for accessing this service.
         /// </summary>
         /// <value>The Subscription Key.</value>
-        [JsonProperty("subscriptionKey")]
+        [JsonPropertyName("subscriptionKey")]
         public string SubscriptionKey { get; set; }
 
         /// <summary>
         /// Gets or sets version of the LUIS app.
         /// </summary>
         /// <value>The Version of the LUIS app.</value>
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
         /// <summary>
         /// Gets or sets region.
         /// </summary>
         /// <value>The Region.</value>
-        [JsonProperty("region")]
+        [JsonPropertyName("region")]
         public string Region { get; set; }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Microsoft.Bot.Configuration
         /// If a value is set, then the GetEndpoint() method will return the value for Custom Endpoint.
         /// </summary>
         /// <value>The Region.</value>
-        [JsonProperty("customEndpoint")]
+        [JsonPropertyName("customEndpoint")]
         public string CustomEndpoint { get; set; }
 
         /// <summary>

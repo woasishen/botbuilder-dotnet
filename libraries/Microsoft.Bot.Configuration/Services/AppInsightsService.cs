@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Represents the configuration properties for an Application Insights service.
     /// </summary>
@@ -27,21 +27,21 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets instrumentation Key.
         /// </summary>
         /// <value>The Instrumentation Key.</value>
-        [JsonProperty("instrumentationKey")]
+        [JsonPropertyName("instrumentationKey")]
         public string InstrumentationKey { get; set; }
 
         /// <summary>
         /// Gets or sets applicationId for programatic access to appInsights.
         /// </summary>
         /// <value>The Application Id.</value>
-        [JsonProperty("applicationId")]
+        [JsonPropertyName("applicationId")]
         public string ApplicationId { get; set; }
 
         /// <summary>
         /// Gets or sets apiKeys.
         /// </summary>
         /// <value>The Api Keys.</value>
-        [JsonProperty("apiKeys")]
+        [JsonPropertyName("apiKeys")]
 #pragma warning disable CA2227 // Collection properties should be read only (this class is obsolete, we won't fix it)
         public Dictionary<string, string> ApiKeys { get; set; } = new Dictionary<string, string>();
 #pragma warning restore CA2227 // Collection properties should be read only

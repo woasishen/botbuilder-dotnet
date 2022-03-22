@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Text.Json.Serialization;
 using Microsoft.Bot.Configuration.Encryption;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Configuration
 {
@@ -27,28 +27,28 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets kbId.
         /// </summary>
         /// <value>The Knowledge Base Id.</value>
-        [JsonProperty("kbId")]
+        [JsonPropertyName("kbId")]
         public string KbId { get; set; }
 
         /// <summary>
         /// Gets or sets subscriptionKey.
         /// </summary>
         /// <value>The subscription key.</value>
-        [JsonProperty("subscriptionKey")]
+        [JsonPropertyName("subscriptionKey")]
         public string SubscriptionKey { get; set; }
 
         /// <summary>
         /// Gets or sets url for the deployed qnaMaker instance.
         /// </summary>
         /// <value>The Host name.</value>
-        [JsonProperty("hostname")]
+        [JsonPropertyName("hostname")]
         public string Hostname { get => _hostname; set => _hostname = new Uri(new Uri(value), "/qnamaker").AbsoluteUri; }
 
         /// <summary>
         /// Gets or sets endpointKey.
         /// </summary>
         /// <value>The endpoint.</value>
-        [JsonProperty("endpointKey")]
+        [JsonPropertyName("endpointKey")]
         public string EndpointKey { get; set; }
 
         /// <inheritdoc/>

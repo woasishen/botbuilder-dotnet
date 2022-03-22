@@ -84,7 +84,7 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                 .Returns<ReceiveRequest, ILogger<RequestHandler>, object, CancellationToken>((request, anonLogger, context, cancellationToken) =>
                 {
                     var body = request.ReadBodyAsString();
-                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
 
                     Assert.NotNull(response);
                     Assert.Equal("Echo: hi", response.Text);
@@ -153,7 +153,7 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                 .Returns<ReceiveRequest, ILogger<RequestHandler>, object, CancellationToken>((request, anonLogger, context, cancellationToken) =>
                 {
                     var body = request.ReadBodyAsString();
-                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
 
                     Assert.NotNull(response);
                     Assert.Equal("Echo: hi", response.Text);
@@ -254,7 +254,7 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                     try
                     {
                         var body = request.ReadBodyAsString();
-                        var response = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                        var response = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
 
                         Assert.NotNull(response);
                         Assert.Equal($"Echo: {activities.FirstOrDefault(a => a.Id == response.ReplyToId)?.Text}", response.Text);
@@ -362,7 +362,7 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                     try
                     {
                         var body = request.ReadBodyAsString();
-                        var response = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                        var response = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
                         Assert.NotNull(response);
 
                         Assert.Equal($"Echo: {activities.FirstOrDefault(a => a.Id == response.ReplyToId)?.Text}", response.Text);
@@ -421,7 +421,7 @@ namespace Microsoft.Bot.Connector.Streaming.Tests.Integration
                 .Returns<ReceiveRequest, ILogger<RequestHandler>, object, CancellationToken>((request, anonLogger, context, cancellationToken) =>
                 {
                     var body = request.ReadBodyAsString();
-                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                    var response = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
 
                     Assert.NotNull(response);
                     Assert.Equal("Echo: hi", response.Text);

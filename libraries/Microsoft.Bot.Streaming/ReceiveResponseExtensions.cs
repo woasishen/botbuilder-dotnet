@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Streaming
 {
@@ -36,13 +36,12 @@ namespace Microsoft.Bot.Streaming
                 return default;
             }
 
-            using (var reader = new StreamReader(contentStream.Stream, Encoding.UTF8))
+            using (var stream = new MemoryStream())
             {
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    var serializer = JsonSerializer.Create(SerializationSettings.DefaultDeserializationSettings);
-                    return serializer.Deserialize<T>(jsonReader);
-                }
+                contentStream.Stream.CopyTo(stream);
+
+                var reader = new Utf8JsonReader(stream.ToArray());
+                return JsonSerializer.Deserialize<T>(ref reader, SerializationConfig.DefaultDeserializeOptions);
             }
         }
 

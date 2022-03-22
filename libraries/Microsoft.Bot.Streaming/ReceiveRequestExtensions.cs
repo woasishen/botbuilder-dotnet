@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Streaming
 {
@@ -54,7 +54,7 @@ namespace Microsoft.Bot.Streaming
 
             var bodyString = await request.ReadBodyAsStringAsync().ConfigureAwait(false);
 
-            return JsonConvert.DeserializeObject<T>(bodyString, SerializationSettings.DefaultDeserializationSettings);
+            return JsonSerializer.Deserialize<T>(bodyString, SerializationConfig.DefaultDeserializeOptions);
         }
 
         /// <summary>

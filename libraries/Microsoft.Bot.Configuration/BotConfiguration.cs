@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using System.Xml;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     /// BotConfiguration represents configuration information for a bot.
     /// </summary>
@@ -26,35 +27,35 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets name of the bot.
         /// </summary>
         /// <value>The name of the bot.</value>
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets description of the bot.
         /// </summary>
         /// <value>The description for the bot.</value>
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets padlock - Used to validate that the secret is consistent for all encrypted fields.
         /// </summary>
         /// <value>The padlock.</value>
-        [JsonProperty("padlock")]
+        [JsonPropertyName("padlock")]
         public string Padlock { get; set; }
 
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; } = "2.0";
 
         /// <summary>
         /// Gets or sets connected services.
         /// </summary>
         /// <value>The list of connected services.</value>
-        [JsonProperty("services")]
+        [JsonPropertyName("services")]
         [JsonConverter(typeof(BotServiceConverter))]
 #pragma warning disable CA2227 // Collection properties should be read only (this class is obsolete, we won't fix it)
         public List<ConnectedService> Services { get; set; } = new List<ConnectedService>();
@@ -67,9 +68,9 @@ namespace Microsoft.Bot.Configuration
         /// <remarks>With this, properties not represented in the defined type are not dropped when
         /// the JSON object is deserialized, but are instead stored in this property. Such properties
         /// will be written to a JSON object when the instance is serialized.</remarks>
-        [JsonExtensionData(ReadData = true, WriteData = true)]
+        [JsonExtensionData]
 #pragma warning disable CA2227 // Collection properties should be read only (this class is obsolete, we won't fix it)
-        public JObject Properties { get; set; } = new JObject();
+        public Dictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Microsoft.Bot.Configuration
                 json = await stream.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            var bot = JsonConvert.DeserializeObject<BotConfiguration>(json);
+            var bot = JsonSerializer.Deserialize<BotConfiguration>(json);
             bot.Location = file;
             bot.MigrateData();
 

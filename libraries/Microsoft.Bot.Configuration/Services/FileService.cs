@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Configuration properties for a connected File service.
     /// </summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets file path.
         /// </summary>
         /// <value>The Path for the file.</value>
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public string Path { get; set; }
     }
 }

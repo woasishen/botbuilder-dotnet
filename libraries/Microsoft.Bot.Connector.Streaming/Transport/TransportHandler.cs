@@ -6,13 +6,14 @@ using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Connector.Streaming.Payloads;
 using Microsoft.Bot.Streaming.Payloads;
 using Microsoft.Bot.Streaming.Transport;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Connector.Streaming.Transport
 {
@@ -154,7 +155,7 @@ namespace Microsoft.Bot.Connector.Streaming.Transport
                 throw new ArgumentNullException(nameof(response));
             }
 
-            var responseBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response));
+            var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response, SerializationConfig.DefaultSerializeOptions));
 
             var responseHeader = new Header()
             {
@@ -176,7 +177,7 @@ namespace Microsoft.Bot.Connector.Streaming.Transport
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var requestBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
+            var requestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request, SerializationConfig.DefaultSerializeOptions));
 
             var requestHeader = new Header()
             {

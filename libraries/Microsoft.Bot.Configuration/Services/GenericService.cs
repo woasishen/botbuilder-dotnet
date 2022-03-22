@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// An Generic service containing configuration properties for the service.
     /// </summary>
@@ -27,7 +27,7 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets url for deep link to service.
         /// </summary>
         /// <value>The Url to Service.</value>
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
 #pragma warning disable CA1056 // Uri properties should not be strings (this class is obsolete, we won't fix it)
         public string Url { get; set; }
 #pragma warning restore CA1056 // Uri properties should not be strings
@@ -36,7 +36,7 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets configuration.
         /// </summary>
         /// <value>The service configuration.</value>
-        [JsonProperty("configuration")]
+        [JsonPropertyName("configuration")]
 #pragma warning disable CA2227 // Collection properties should be read only (this class is obsolete, we won't fix it)
         public Dictionary<string, string> Configuration { get; set; } = new Dictionary<string, string>();
 #pragma warning restore CA2227 // Collection properties should be read only

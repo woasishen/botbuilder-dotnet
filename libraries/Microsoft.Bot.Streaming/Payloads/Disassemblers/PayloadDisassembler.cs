@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Streaming.PayloadTransport;
 using Microsoft.Bot.Streaming.Transport;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Streaming.Payloads
 {
@@ -42,14 +43,6 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// The one character type of the payload this disassembler is operating on. <see cref="TransportConstants"/>.
         /// </value>
         public abstract char Type { get; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="JsonSerializer"/> for use by this disassembler. Used to set custom <see cref="SerializationSettings"/>.
-        /// </summary>
-        /// <value>
-        /// The <see cref="JsonSerializer"/> for use by this disassembler. Used to set custom <see cref="SerializationSettings"/>.
-        /// </value>
-        protected static JsonSerializer Serializer { get; set; } = JsonSerializer.Create(SerializationSettings.DefaultSerializationSettings);
 
         private IPayloadSender Sender { get; set; }
 
@@ -130,14 +123,8 @@ namespace Microsoft.Bot.Streaming.Payloads
         protected static void Serialize<T>(T item, out MemoryStream stream, out int length)
         {
             stream = new MemoryStream();
-            using (var textWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true))
-            {
-                using (var jsonWriter = new JsonTextWriter(textWriter))
-                {
-                    Serializer.Serialize(jsonWriter, item);
-                    jsonWriter.Flush();
-                }
-            }
+
+            JsonSerializer.SerializeAsync(stream, item, SerializationConfig.DefaultSerializeOptions).GetAwaiter().GetResult();
 
             length = (int)stream.Position;
             stream.Position = 0;

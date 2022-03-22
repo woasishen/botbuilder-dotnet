@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.Bot.Streaming.Payloads;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Connector.Streaming.Payloads
 {
@@ -13,13 +13,13 @@ namespace Microsoft.Bot.Connector.Streaming.Payloads
         /// <summary>
         /// Gets or sets status - The Response Status.
         /// </summary>
-        [JsonProperty("statusCode")]
+        [JsonPropertyName("statusCode")]
         public int StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets assoicated stream descriptions.
         /// </summary>
-        [JsonProperty("streams")]
+        [JsonPropertyName("streams")]
         public List<StreamDescription> Streams { get; set; }
 #pragma warning restore SA1609
     }

@@ -3,7 +3,8 @@
 
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Streaming
 {
@@ -41,8 +42,8 @@ namespace Microsoft.Bot.Streaming
                 return;
             }
 
-            var json = JsonConvert.SerializeObject(body, SerializationSettings.BotSchemaSerializationSettings);
-            request.AddStream(new StringContent(json, Encoding.UTF8, SerializationSettings.ApplicationJson));
+            var json = JsonSerializer.Serialize(body, SerializationConfig.DefaultSerializeOptions);
+            request.AddStream(new StringContent(json, Encoding.UTF8, "application/json"));
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Text.Json.Serialization;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Configuration properties for a connected Cosmos DB database.
     /// </summary>
@@ -25,28 +25,28 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets endpoint for CosmosDB.
         /// </summary>
         /// <value>The endpoint for CosmosDB.</value>
-        [JsonProperty("endpoint")]
+        [JsonPropertyName("endpoint")]
         public string Endpoint { get; set; }
 
         /// <summary>
         /// Gets or sets key for accessing CosmosDB.
         /// </summary>
         /// <value>The key for CosmosDB.</value>
-        [JsonProperty("key")]
+        [JsonPropertyName("key")]
         public string Key { get; set; }
 
         /// <summary>
         /// Gets or sets database.
         /// </summary>
         /// <value>The database for CosmosDB.</value>
-        [JsonProperty("database")]
+        [JsonPropertyName("database")]
         public string Database { get; set; }
 
         /// <summary>
         /// Gets or sets collection.
         /// </summary>
         /// <value>The collection for CosmosDB.</value>
-        [JsonProperty("collection")]
+        [JsonPropertyName("collection")]
         public string Collection { get; set; }
 
         /// <inheritdoc/>

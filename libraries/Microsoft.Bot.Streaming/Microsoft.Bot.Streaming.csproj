@@ -29,6 +29,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.22" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
+    <!-- Force System.Text.Encodings.Web to a safe version. -->
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Bot.Connector.Client\Microsoft.Bot.Connector.Client.csproj" />
   </ItemGroup>
 </Project>

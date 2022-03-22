@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Text.Json.Serialization;
+using Microsoft.Bot.Configuration.Encryption;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using Microsoft.Bot.Configuration.Encryption;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// An Endpoint service containing configuration properties defining the endpoint for a bot (Azure or Government).
     /// </summary>
@@ -25,28 +25,28 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets appId for the bot.
         /// </summary>
         /// <value>The App Id.</value>
-        [JsonProperty("appId")]
+        [JsonPropertyName("appId")]
         public string AppId { get; set; }
 
         /// <summary>
         /// Gets or sets app password for the bot.
         /// </summary>
         /// <value>The App password.</value>
-        [JsonProperty("appPassword")]
+        [JsonPropertyName("appPassword")]
         public string AppPassword { get; set; }
 
         /// <summary>
         /// Gets or sets the channel service (Azure or US Government Azure) for the bot.
         /// </summary>
         /// <value>The Channel Service.</value>
-        [JsonProperty("channelService")]
+        [JsonPropertyName("channelService")]
         public string ChannelService { get; set; }
 
         /// <summary>
         /// Gets or sets endpoint url for the bot.
         /// </summary>
         /// <value>The Endpoint for the Bot.</value>
-        [JsonProperty("endpoint")]
+        [JsonPropertyName("endpoint")]
         public string Endpoint { get; set; }
 
         /// <inheritdoc/>

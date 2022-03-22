@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Bot.Streaming.Payloads
 {
@@ -16,7 +16,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <value>
         /// The ID of the <see cref="PayloadStream"/> this StreamDescription describes.
         /// </value>
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <value>
         /// The type (<see cref="Microsoft.Bot.Streaming.Transport.TransportConstants"/>) of the content contained in the described <see cref="PayloadStream"/>.
         /// </value>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string ContentType { get; set; }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <value>
         /// The length of the described <see cref="PayloadStream"/>.
         /// </value>
-        [JsonProperty("length")]
+        [JsonPropertyName("length")]
         public int? Length { get; set; }
     }
 }

@@ -261,7 +261,7 @@ namespace Microsoft.Bot.Builder.Streaming
 
             try
             {
-                var activity = JsonConvert.DeserializeObject<Activity>(body, SerializationSettings.DefaultDeserializationSettings);
+                var activity = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
                 var conversationId = activity?.Conversation?.Id;
 
                 // An Activity with Conversation.Id is required.

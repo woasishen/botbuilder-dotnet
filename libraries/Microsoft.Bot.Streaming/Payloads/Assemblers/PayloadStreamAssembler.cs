@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Streaming.Payloads
 {

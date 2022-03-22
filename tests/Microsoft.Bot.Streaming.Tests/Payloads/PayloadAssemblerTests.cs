@@ -192,7 +192,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
                     new StreamDescription { Id = id.ToString(), ContentType = "content-type", Length = 3 }
                 }
             };
-            var payloadStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload, SerializationSettings.DefaultDeserializationSettings)));
+            var payloadStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload, SerializationConfig.DefaultDeserializeOptions)));
             
             assembler.GetPayloadStream(headerGetPayloadStream);
             assembler.OnReceive(headerOnReceive, payloadStream, 3);
@@ -231,7 +231,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
                     new StreamDescription { Id = id.ToString(), ContentType = "content-type", Length = 3 }
                 }
             };
-            var payloadStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload, SerializationSettings.DefaultDeserializationSettings)));
+            var payloadStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payload, SerializationConfig.DefaultDeserializeOptions)));
 
             assembler.GetPayloadStream(headerGetPayloadStream);
             assembler.OnReceive(headerOnReceive, payloadStream, 3);

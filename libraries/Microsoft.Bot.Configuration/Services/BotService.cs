@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Bot.Configuration
 {
-    using System;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Configuration properties for a connected Azure Bot Service bot registration.
     /// </summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Bot.Configuration
         /// Gets or sets appId for the bot.
         /// </summary>
         /// <value>The App Id.</value>
-        [JsonProperty("appId")]
+        [JsonPropertyName("appId")]
         public string AppId { get; set; }
     }
 }

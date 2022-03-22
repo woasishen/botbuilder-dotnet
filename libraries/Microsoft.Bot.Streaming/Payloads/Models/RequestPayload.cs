@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Bot.Streaming.Payloads
 {
@@ -12,19 +12,19 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <summary>
         /// Gets or sets request verb, null on responses.
         /// </summary>
-        [JsonProperty("verb")]
+        [JsonPropertyName("verb")]
         public string Verb { get; set; }
 
         /// <summary>
         /// Gets or sets request path; null on responses.
         /// </summary>
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public string Path { get; set; }
 
         /// <summary>
         /// Gets or sets assoicated stream descriptions.
         /// </summary>
-        [JsonProperty("streams")]
+        [JsonPropertyName("streams")]
         public List<StreamDescription> Streams { get; set; }
 #pragma warning restore SA1609
     }

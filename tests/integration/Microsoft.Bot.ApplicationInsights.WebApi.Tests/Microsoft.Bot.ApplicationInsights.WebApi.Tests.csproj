@@ -82,10 +82,6 @@
       <Project>{b609db2c-5c1f-46d1-a0fa-a0ff9216899a}</Project>
       <Name>Microsoft.Bot.Builder.ApplicationInsights</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\libraries\Microsoft.Bot.Schema\Microsoft.Bot.Schema.csproj">
-      <Project>{c1f54cdc-ad1d-45bb-8f7d-f49e411afaf1}</Project>
-      <Name>Microsoft.Bot.Schema</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.TraceListener">

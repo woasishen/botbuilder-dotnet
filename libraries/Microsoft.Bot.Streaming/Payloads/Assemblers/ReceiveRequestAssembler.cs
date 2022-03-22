@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Streaming.Utilities;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Streaming.Payloads
 {
@@ -33,8 +34,6 @@ namespace Microsoft.Bot.Streaming.Payloads
         public Guid Id { get; private set; }
 
         public bool End { get; private set; }
-
-        protected static JsonSerializer Serializer { get; set; } = JsonSerializer.Create(SerializationSettings.DefaultSerializationSettings);
 
         private Stream Stream { get; set; }
 
@@ -83,43 +82,37 @@ namespace Microsoft.Bot.Streaming.Payloads
 
         private async Task ProcessRequestAsync(Stream stream)
         {
-            using (var textReader = new StreamReader(stream))
+            var requestPayload = await JsonSerializer.DeserializeAsync<RequestPayload>(stream, SerializationConfig.DefaultDeserializeOptions).ConfigureAwait(false);
+
+            var request = new ReceiveRequest()
             {
-                using (var jsonReader = new JsonTextReader(textReader))
+                Verb = requestPayload.Verb,
+                Path = requestPayload.Path,
+                Streams = new List<IContentStream>(),
+            };
+
+            if (requestPayload.Streams != null)
+            {
+                foreach (var streamDescription in requestPayload.Streams)
                 {
-                    var requestPayload = Serializer.Deserialize<RequestPayload>(jsonReader);
-
-                    var request = new ReceiveRequest()
+                    if (!Guid.TryParse(streamDescription.Id, out Guid id))
                     {
-                        Verb = requestPayload.Verb,
-                        Path = requestPayload.Path,
-                        Streams = new List<IContentStream>(),
-                    };
-
-                    if (requestPayload.Streams != null)
-                    {
-                        foreach (var streamDescription in requestPayload.Streams)
-                        {
-                            if (!Guid.TryParse(streamDescription.Id, out Guid id))
-                            {
-                                throw new InvalidDataException($"Stream description id '{streamDescription.Id}' is not a Guid");
-                            }
-
-                            var streamAssembler = _streamManager.GetPayloadAssembler(id);
-                            streamAssembler.ContentType = streamDescription.ContentType;
-                            streamAssembler.ContentLength = streamDescription.Length;
-
-                            request.Streams.Add(new ContentStream(id, streamAssembler)
-                            {
-                                Length = streamDescription.Length,
-                                ContentType = streamDescription.ContentType,
-                            });
-                        }
+                        throw new InvalidDataException($"Stream description id '{streamDescription.Id}' is not a Guid");
                     }
 
-                    await _onCompleted(this.Id, request).ConfigureAwait(false);
+                    var streamAssembler = _streamManager.GetPayloadAssembler(id);
+                    streamAssembler.ContentType = streamDescription.ContentType;
+                    streamAssembler.ContentLength = streamDescription.Length;
+
+                    request.Streams.Add(new ContentStream(id, streamAssembler)
+                    {
+                        Length = streamDescription.Length,
+                        ContentType = streamDescription.ContentType,
+                    });
                 }
             }
+
+            await _onCompleted(this.Id, request).ConfigureAwait(false);
         }
     }
 }

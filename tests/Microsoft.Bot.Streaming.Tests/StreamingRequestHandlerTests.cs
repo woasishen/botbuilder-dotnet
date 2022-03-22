@@ -130,7 +130,7 @@ namespace Microsoft.Bot.Builder.Streaming.Tests
                 Conversation = new ConversationAccount(null, null, conversationId, null, null, null, null),
             };
 
-            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationSettings.DefaultDeserializationSettings)));
+            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationConfig.DefaultDeserializeOptions)));
             var fakeContentStreamId = Guid.NewGuid();
             var fakeContentStream = new FakeContentStream(fakeContentStreamId, "application/json", payload);
             var testRequest = new ReceiveRequest
@@ -204,7 +204,7 @@ namespace Microsoft.Bot.Builder.Streaming.Tests
                 Conversation = new ConversationAccount(null, null, conversationId, null, null, null, null),
             };
 
-            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationSettings.DefaultDeserializationSettings)));
+            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationConfig.DefaultDeserializeOptions)));
             var fakeContentStreamId = Guid.NewGuid();
             var fakeContentStream = new FakeContentStream(fakeContentStreamId, "application/json", payload);
             var testRequest = new ReceiveRequest
@@ -241,7 +241,7 @@ namespace Microsoft.Bot.Builder.Streaming.Tests
                 Conversation = new ConversationAccount(null, null, conversationId, null, null, null, null),
             };
 
-            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationSettings.DefaultDeserializationSettings)));
+            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationConfig.DefaultDeserializeOptions)));
             var fakeContentStreamId = Guid.NewGuid();
             var fakeContentStream = new FakeContentStream(fakeContentStreamId, "application/json", payload);
             var testRequest = new ReceiveRequest
@@ -281,7 +281,7 @@ namespace Microsoft.Bot.Builder.Streaming.Tests
                 Conversation = new ConversationAccount(null, null, conversationId, null, null, null, null),
             };
 
-            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationSettings.DefaultDeserializationSettings)));
+            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationConfig.DefaultDeserializeOptions)));
             var fakeContentStreamId = Guid.NewGuid();
             var fakeContentStream = new FakeContentStream(fakeContentStreamId, "application/json", payload);
             var testRequest = new ReceiveRequest
@@ -318,7 +318,7 @@ namespace Microsoft.Bot.Builder.Streaming.Tests
                 Conversation = new Schema.ConversationAccount(null, null, Guid.NewGuid().ToString(), null, null, null, null),
             };
 
-            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationSettings.DefaultDeserializationSettings)));
+            var payload = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(activity, SerializationConfig.DefaultDeserializeOptions)));
             var fakeContentStreamId = Guid.NewGuid();
             var fakeContentStream = new FakeContentStream(fakeContentStreamId, "application/json", payload);
             var testRequest = new ReceiveRequest();
