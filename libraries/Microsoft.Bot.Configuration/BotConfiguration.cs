@@ -8,8 +8,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.Bot.Configuration.Encryption;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Configuration
 {
@@ -228,7 +228,7 @@ namespace Microsoft.Bot.Configuration
             {
                 using (var textWriter = new StreamWriter(file))
                 {
-                    await textWriter.WriteLineAsync(JsonConvert.SerializeObject(this, Formatting.Indented)).ConfigureAwait(false);
+                    await textWriter.WriteLineAsync(JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true })).ConfigureAwait(false);
                 }
             }
 
@@ -475,7 +475,7 @@ namespace Microsoft.Bot.Configuration
         protected virtual void MigrateData()
         {
             // migrate old secretKey
-            var secretKey = (string)this.Properties[SECRETKEY];
+            var secretKey = Properties[SECRETKEY].GetString();
             if (secretKey != null)
             {
                 if (this.Padlock == null)
@@ -519,70 +519,71 @@ namespace Microsoft.Bot.Configuration
         /// Converter for strongly typed connected services.
         /// </summary>
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated (this class is obsolete, we won't fix this)
-        internal class BotServiceConverter : JsonConverter
+        internal class BotServiceConverter : JsonConverter<List<ConnectedService>>
 #pragma warning restore CA1812 // Internal class that is apparently never instantiated
         {
-            public override bool CanWrite => false;
-
-            /// <summary>
-            /// Checks whether the connected service can be converted to the provided type.
-            /// </summary>
-            /// <param name="objectType">Type to be checked for conversion. </param>
-            /// <returns>Whether the connected service can be converted to the provided type.</returns>
-            public override bool CanConvert(Type objectType) => objectType == typeof(List<ConnectedService>);
-
-            /// <inheritdoc/>
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            public override List<ConnectedService> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 var services = new List<ConnectedService>();
-                var array = JArray.Load(reader);
-                foreach (var token in array)
+
+                while (reader.Read())
                 {
-                    var type = token.Value<string>("type");
-                    switch (type)
+                    if (reader.TokenType == JsonTokenType.EndArray)
                     {
-                        case ServiceTypes.Bot:
-                            services.Add(token.ToObject<BotService>());
-                            break;
-                        case ServiceTypes.AppInsights:
-                            services.Add(token.ToObject<AppInsightsService>());
-                            break;
-                        case ServiceTypes.BlobStorage:
-                            services.Add(token.ToObject<BlobStorageService>());
-                            break;
-                        case ServiceTypes.CosmosDB:
-                            services.Add(token.ToObject<CosmosDbService>());
-                            break;
-                        case ServiceTypes.Dispatch:
-                            services.Add(token.ToObject<DispatchService>());
-                            break;
-                        case ServiceTypes.Endpoint:
-                            services.Add(token.ToObject<EndpointService>());
-                            break;
-                        case ServiceTypes.File:
-                            services.Add(token.ToObject<FileService>());
-                            break;
-                        case ServiceTypes.Luis:
-                            services.Add(token.ToObject<LuisService>());
-                            break;
-                        case ServiceTypes.QnA:
-                            services.Add(token.ToObject<QnAMakerService>());
-                            break;
-                        case ServiceTypes.Generic:
-                            services.Add(token.ToObject<GenericService>());
-                            break;
-                        default:
-                            System.Diagnostics.Trace.TraceWarning($"Unknown service type {type}");
-                            services.Add(token.ToObject<ConnectedService>());
-                            break;
+                        break;
+                    }
+
+                    if (reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        var service = JsonSerializer.Deserialize<ConnectedService>(ref reader, SerializationConfig.DefaultDeserializeOptions);
+
+                        switch (service.Type)
+                        {
+                            case ServiceTypes.Bot:
+                                services.Add(service.ToObject<BotService>());
+                                break;
+                            case ServiceTypes.AppInsights:
+                                services.Add(service.ToObject<AppInsightsService>());
+                                break;
+                            case ServiceTypes.BlobStorage:
+                                services.Add(service.ToObject<BlobStorageService>());
+                                break;
+                            case ServiceTypes.CosmosDB:
+                                services.Add(service.ToObject<CosmosDbService>());
+                                break;
+                            case ServiceTypes.Dispatch:
+                                services.Add(service.ToObject<DispatchService>());
+                                break;
+                            case ServiceTypes.Endpoint:
+                                services.Add(service.ToObject<EndpointService>());
+                                break;
+                            case ServiceTypes.File:
+                                services.Add(service.ToObject<FileService>());
+                                break;
+                            case ServiceTypes.Luis:
+                                services.Add(service.ToObject<LuisService>());
+                                break;
+                            case ServiceTypes.QnA:
+                                services.Add(service.ToObject<QnAMakerService>());
+                                break;
+                            case ServiceTypes.Generic:
+                                services.Add(service.ToObject<GenericService>());
+                                break;
+                            default:
+                                System.Diagnostics.Trace.TraceWarning($"Unknown service type {service.Type}");
+                                services.Add(service);
+                                break;
+                        }
                     }
                 }
 
                 return services;
             }
 
-            /// <inheritdoc/>
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => throw new NotImplementedException();
+            public override void Write(Utf8JsonWriter writer, List<ConnectedService> value, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
