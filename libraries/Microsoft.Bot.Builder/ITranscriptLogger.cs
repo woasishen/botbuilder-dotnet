@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -16,6 +16,6 @@ namespace Microsoft.Bot.Builder
         /// </summary>
         /// <param name="activity">The activity to transcribe.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        Task LogActivityAsync(IActivity activity);
+        Task LogActivityAsync(Activity activity);
     }
 }

@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Models;
+using Activity = Microsoft.Bot.Connector.Client.Models.Activity;
 
 namespace Microsoft.Bot.Builder
 {
@@ -13,8 +14,6 @@ namespace Microsoft.Bot.Builder
     /// </summary>
     public class TraceTranscriptLogger : ITranscriptLogger
     {
-        private static readonly JsonSerializerSettings _serializationSettings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented };
-
         private readonly bool _traceActivity;
 
         /// <summary>
@@ -39,12 +38,12 @@ namespace Microsoft.Bot.Builder
         /// </summary>
         /// <param name="activity">The activity to transcribe.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        public Task LogActivityAsync(IActivity activity)
+        public Task LogActivityAsync(Activity activity)
         {
             BotAssert.ActivityNotNull(activity);
             if (_traceActivity)
             {
-                Trace.TraceInformation(JsonConvert.SerializeObject(activity, _serializationSettings));
+                Trace.TraceInformation(JsonSerializer.Serialize(activity, SerializationConfig.DefaultSerializeOptions));
             }
             else
             {

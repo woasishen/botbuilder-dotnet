@@ -5,7 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Bot.Connector.Client.Authentication;
 
 namespace Microsoft.Bot.Builder
 {

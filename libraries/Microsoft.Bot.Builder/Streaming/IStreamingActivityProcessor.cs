@@ -3,6 +3,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Schema;
 
 namespace Microsoft.Bot.Builder.Streaming

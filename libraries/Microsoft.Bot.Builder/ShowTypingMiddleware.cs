@@ -6,8 +6,8 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -54,8 +54,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>A task that represents the work queued to execute.</returns>
         /// <remarks>Spawns a thread that sends the periodic typing activities until the turn ends.
         /// </remarks>
-        /// <seealso cref="ITurnContext"/>
-        /// <seealso cref="Bot.Schema.IActivity"/>
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken)
         {
             using (var cts = new CancellationTokenSource())
@@ -86,7 +84,7 @@ namespace Microsoft.Bot.Builder
         private static bool IsSkillBot(ITurnContext turnContext)
         {
             return turnContext.TurnState.Get<IIdentity>(BotAdapter.BotIdentityKey) is ClaimsIdentity claimIdentity
-                && SkillValidation.IsSkillClaim(claimIdentity.Claims);
+                && claimIdentity.Claims.IsSkillClaim();
         }
 
         private static async Task SendTypingAsync(ITurnContext turnContext, TimeSpan delay, TimeSpan period, CancellationToken cancellationToken)

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Bot.Builder
         /// <param name="activity">The activity object.</param>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="activity"/> is <c>null</c>.</exception>
-        public static void ActivityNotNull(IActivity activity)
+        public static void ActivityNotNull(Activity activity)
         {
             if (activity == null)
             {

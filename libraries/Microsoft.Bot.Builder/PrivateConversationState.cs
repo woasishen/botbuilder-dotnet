@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -32,10 +33,10 @@ namespace Microsoft.Bot.Builder
         /// of its storage key.
         /// </remarks>
         /// <exception cref="ArgumentNullException">The <see cref="ITurnContext.Activity"/> for the
-        /// current turn is missing <see cref="Schema.Activity.ChannelId"/>,
-        /// <see cref="Schema.Activity.Conversation"/>, or
-        /// <see cref="Schema.Activity.From"/> information; or
-        /// the conversation's or sender's <see cref="Schema.ConversationAccount.Id"/> is missing.
+        /// current turn is missing <see cref="Activity.ChannelId"/>,
+        /// <see cref="Activity.Conversation"/>, or
+        /// <see cref="Activity.From"/> information; or
+        /// the conversation's or sender's <see cref="ConversationAccount.Id"/> is missing.
         /// </exception>
         protected override string GetStorageKey(ITurnContext turnContext)
         {

@@ -10,17 +10,19 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Connector.Streaming.Application;
-using Microsoft.Bot.Schema;
 using Microsoft.Bot.Streaming;
 using Microsoft.Bot.Streaming.Transport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Builder.Streaming
 {
@@ -78,8 +80,8 @@ namespace Microsoft.Bot.Builder.Streaming
         /// The audience represents the recipient at the other end of the StreamingRequestHandler's
         /// streaming connection. Some acceptable audience values are as follows:
         /// <list>
-        /// <item>- For Public Azure channels, use <see cref="Microsoft.Bot.Connector.Authentication.AuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
-        /// <item>- For Azure Government channels, use <see cref="Microsoft.Bot.Connector.Authentication.GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
+        /// <item>- For Public Azure channels, use <see cref="AuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
+        /// <item>- For Azure Government channels, use <see cref="GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
         /// </list>
         /// </remarks>
         /// <param name="bot">The bot for which we handle requests.</param>
@@ -123,8 +125,8 @@ namespace Microsoft.Bot.Builder.Streaming
         /// The audience represents the recipient at the other end of the StreamingRequestHandler's
         /// streaming connection. Some acceptable audience values are as follows:
         /// <list>
-        /// <item>- For Public Azure channels, use <see cref="Microsoft.Bot.Connector.Authentication.AuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
-        /// <item>- For Azure Government channels, use <see cref="Microsoft.Bot.Connector.Authentication.GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
+        /// <item>- For Public Azure channels, use <see cref="AuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
+        /// <item>- For Azure Government channels, use <see cref="GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope"/>.</item>
         /// </list>
         /// </remarks>
         /// <param name="bot">The bot for which we handle requests.</param>
@@ -261,7 +263,7 @@ namespace Microsoft.Bot.Builder.Streaming
 
             try
             {
-                var activity = JsonConvert.DeserializeObject<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
+                var activity = JsonSerializer.Deserialize<Activity>(body, SerializationConfig.DefaultDeserializeOptions);
                 var conversationId = activity?.Conversation?.Id;
 
                 // An Activity with Conversation.Id is required.
@@ -305,19 +307,9 @@ namespace Microsoft.Bot.Builder.Streaming
                  */
                 if (request.Streams.Count > 1)
                 {
-                    var streamAttachments = new List<Attachment>();
                     for (var i = 1; i < request.Streams.Count; i++)
                     {
-                        streamAttachments.Add(new Attachment() { ContentType = request.Streams[i].ContentType, Content = request.Streams[i].Stream });
-                    }
-
-                    if (activity.Attachments != null)
-                    {
-                        activity.Attachments = activity.Attachments.Concat(streamAttachments).ToArray();
-                    }
-                    else
-                    {
-                        activity.Attachments = streamAttachments.ToArray();
+                        activity.Attachments.Add(new Attachment() { ContentType = request.Streams[i].ContentType, Content = request.Streams[i].Stream });
                     }
                 }
 
@@ -487,16 +479,37 @@ namespace Microsoft.Bot.Builder.Streaming
         /// <returns>A string containing versioning information.</returns>
         private static string GetUserAgent()
         {
-            using (var connectorClient = new ConnectorClient(new Uri("http://localhost")))
+            using (var connectorClient = new HttpClient())
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "Microsoft-BotFramework/3.1 Streaming-Extensions/1.0 BotBuilder/{0} ({1}; {2}; {3})",
-                    ConnectorClient.GetClientVersion(connectorClient),
-                    ConnectorClient.GetASPNetVersion(),
-                    ConnectorClient.GetOsVersion(),
-                    ConnectorClient.GetArchitecture());
+                    GetClientVersion(connectorClient),
+                    GetAspNetVersion(),
+                    RuntimeInformation.OSDescription,
+                    RuntimeInformation.OSArchitecture.ToString());
             }
+        }
+
+        /// <summary>Gets the assembly version for the Azure Bot Service.</summary>
+        /// <typeparam name="T">The type of REST service client to get the version of.</typeparam>
+        /// <param name="client">The REST service client instance to get the version of.</param>
+        /// <returns>The assembly version for the Azure Bot Service.</returns>
+        private static string GetClientVersion<T>(T client)
+        {
+            var type = client.GetType();
+            var assembly = type.GetTypeInfo().Assembly;
+            return assembly.GetName().Version.ToString();
+        }
+
+        /// <summary>Gets the name of the .NET Framework version of the Azure Bot Service..</summary>
+        /// <returns>The name of the .NET Framework version of the Azure Bot Service.</returns>
+        private static string GetAspNetVersion()
+        {
+            return Assembly
+                .GetEntryAssembly()?
+                .GetCustomAttribute<TargetFrameworkAttribute>()?
+                .FrameworkName ?? RuntimeInformation.FrameworkDescription;
         }
 
         private static IEnumerable<HttpContent> UpdateAttachmentStreams(Activity activity)
@@ -506,10 +519,14 @@ namespace Microsoft.Bot.Builder.Streaming
                 return null;
             }
 
-            var streamAttachments = activity.Attachments.Where(a => a.Content is Stream);
+            var streamAttachments = activity.Attachments.Where(a => a.Content is Stream).ToList();
             if (streamAttachments.Any())
             {
-                activity.Attachments = activity.Attachments.Where(a => !(a.Content is Stream)).ToList();
+                foreach (var streamAttachment in streamAttachments)
+                {
+                    activity.Attachments.Remove(streamAttachment);
+                }
+
                 return streamAttachments.Select(streamAttachment =>
                 {
                     var streamContent = new StreamContent(streamAttachment.Content as Stream);

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {

@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Xml.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -16,40 +17,17 @@ namespace Microsoft.Bot.Builder
     /// </summary>
     public class MemoryStorage : IStorage
     {
-        private static readonly JsonSerializer StateJsonSerializer = new JsonSerializer()
-        {
-            TypeNameHandling = TypeNameHandling.All,
-            ReferenceLoopHandling = ReferenceLoopHandling.Error,
-        };
-
-        // If a JsonSerializer is not provided during construction, this will be the default static JsonSerializer.
-        private readonly JsonSerializer _stateJsonSerializer;
-        private readonly Dictionary<string, JObject> _memory;
+        private readonly Dictionary<string, Dictionary<string, JsonElement>> _memory;
         private readonly object _syncroot = new object();
         private int _eTag = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemoryStorage"/> class.
         /// </summary>
-        /// <param name="jsonSerializer">If passing in a custom JsonSerializer, we recommend the following settings:
-        /// <para>jsonSerializer.TypeNameHandling = TypeNameHandling.All.</para>
-        /// <para>jsonSerializer.NullValueHandling = NullValueHandling.Include.</para>
-        /// <para>jsonSerializer.ContractResolver = new DefaultContractResolver().</para>
-        /// </param>
         /// <param name="dictionary">A pre-existing dictionary to use; or null to use a new one.</param>
-        public MemoryStorage(JsonSerializer jsonSerializer, Dictionary<string, JObject> dictionary = null)
+        public MemoryStorage(Dictionary<string, Dictionary<string, JsonElement>> dictionary = null)
         {
-            _stateJsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
-            _memory = dictionary ?? new Dictionary<string, JObject>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MemoryStorage"/> class.
-        /// </summary>
-        /// <param name="dictionary">A pre-existing dictionary to use; or null to use a new one.</param>
-        public MemoryStorage(Dictionary<string, JObject> dictionary = null)
-            : this(StateJsonSerializer, dictionary)
-        {
+            _memory = dictionary ?? new Dictionary<string, Dictionary<string, JsonElement>>();
         }
 
         /// <summary>
@@ -106,7 +84,7 @@ namespace Microsoft.Bot.Builder
                     {
                         if (state != null)
                         {
-                            storeItems.Add(key, state.ToObject<object>(_stateJsonSerializer));
+                            storeItems.Add(key, state);
                         }
                     }
                 }
@@ -143,11 +121,11 @@ namespace Microsoft.Bot.Builder
                     {
                         if (oldState != null && oldState.TryGetValue("eTag", out var etag))
                         {
-                            oldStateETag = etag.Value<string>();
+                            oldStateETag = etag.GetString();
                         }
                     }
 
-                    var newState = newValue != null ? JObject.FromObject(newValue, _stateJsonSerializer) : null;
+                    var newState = newValue != null ? newValue.ToJsonElements() : null;
 
                     // Set ETag if applicable
                     if (newValue is IStoreItem newStoreItem)
@@ -161,7 +139,10 @@ namespace Microsoft.Bot.Builder
                             throw new ArgumentException($"Etag conflict.\r\n\r\nOriginal: {newStoreItem.ETag}\r\nCurrent: {oldStateETag}");
                         }
 
-                        newState["eTag"] = (_eTag++).ToString(CultureInfo.InvariantCulture);
+                        foreach (var element in new { eTag = (_eTag++).ToString(CultureInfo.InvariantCulture) }.ToJsonElements())
+                        {
+                            newState.Add(element.Key, element.Value);
+                        }
                     }
 
                     _memory[change.Key] = newState;

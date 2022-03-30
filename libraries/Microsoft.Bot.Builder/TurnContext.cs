@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -98,7 +98,7 @@ namespace Microsoft.Bot.Builder
         {
             get 
             { 
-                var valueObj = this.TurnState.Get<JObject>(Turn);
+                var valueObj = this.TurnState.Get<Dictionary<string, JsonElement>>(Turn);
                 if (valueObj.TryGetValue(nameof(Locale).ToLowerInvariant(), out var locale))
                 {
                     return locale.ToString();
@@ -111,14 +111,17 @@ namespace Microsoft.Bot.Builder
 
             set
             {
-                var valueObj = this.TurnState.Get<JObject>(Turn);
+                var valueObj = this.TurnState.Get<Dictionary<string, JsonElement>>(Turn);
                 if (valueObj != null)
                 {
-                    valueObj[nameof(Locale).ToLowerInvariant()] = value;
+                    foreach (var element in new { locale = value }.ToJsonElements())
+                    {
+                        valueObj[nameof(Locale).ToLowerInvariant()] = element.Value;
+                    }
                 }
                 else
                 {
-                    valueObj = new JObject(new JProperty(nameof(Locale).ToLowerInvariant(), value));
+                    valueObj = new { locale = value }.ToJsonElements();
                     TurnState.Set(Turn, valueObj);
                 }
             }
@@ -135,7 +138,6 @@ namespace Microsoft.Bot.Builder
         /// Gets a value indicating whether at least one response was sent for the current turn.
         /// </summary>
         /// <value><c>true</c> if at least one response was sent for the current turn.</value>
-        /// <remarks><see cref="ITraceActivity"/> activities on their own do not set this flag.</remarks>
         public bool Responded
         {
             get;
@@ -154,11 +156,6 @@ namespace Microsoft.Bot.Builder
         /// <param name="handler">The handler to add to the context object.</param>
         /// <returns>The updated context object.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="handler"/> is <c>null</c>.</exception>
-        /// <remarks>When the context's <see cref="SendActivityAsync(IActivity, CancellationToken)"/>
-        /// or <see cref="SendActivitiesAsync(IActivity[], CancellationToken)"/> methods are called,
-        /// the adapter calls the registered handlers in the order in which they were
-        /// added to the context object.
-        /// </remarks>
         public ITurnContext OnSendActivities(SendActivitiesHandler handler)
         {
             if (_disposed)
@@ -181,10 +178,6 @@ namespace Microsoft.Bot.Builder
         /// <param name="handler">The handler to add to the context object.</param>
         /// <returns>The updated context object.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="handler"/> is <c>null</c>.</exception>
-        /// <remarks>When the context's <see cref="UpdateActivityAsync(IActivity, CancellationToken)"/> is called,
-        /// the adapter calls the registered handlers in the order in which they were
-        /// added to the context object.
-        /// </remarks>
         public ITurnContext OnUpdateActivity(UpdateActivityHandler handler)
         {
             if (_disposed)
@@ -263,7 +256,7 @@ namespace Microsoft.Bot.Builder
                 throw new ArgumentNullException(nameof(textReplyToSend));
             }
 
-            var activityToSend = new Activity(ActivityTypes.Message) { Text = textReplyToSend };
+            var activityToSend = new Activity { Type = ActivityTypes.Message, Text = textReplyToSend };
 
             if (!string.IsNullOrEmpty(speak))
             {
@@ -288,7 +281,7 @@ namespace Microsoft.Bot.Builder
         /// <remarks>If the activity is successfully sent, the task result contains
         /// a <see cref="ResourceResponse"/> object containing the ID that the receiving
         /// channel assigned to the activity.</remarks>
-        public async Task<ResourceResponse> SendActivityAsync(IActivity activity, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ResourceResponse> SendActivityAsync(Activity activity, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_disposed)
             {
@@ -319,7 +312,7 @@ namespace Microsoft.Bot.Builder
         /// <remarks>If the activities are successfully sent, the task result contains
         /// an array of <see cref="ResourceResponse"/> objects containing the IDs that
         /// the receiving channel assigned to the activities.</remarks>
-        public Task<ResourceResponse[]> SendActivitiesAsync(IActivity[] activities, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<ResourceResponse[]> SendActivitiesAsync(Activity[] activities, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_disposed)
             {
@@ -384,7 +377,7 @@ namespace Microsoft.Bot.Builder
                         // is not being sent through the adapter, where it would be added to TurnState.
                         if (activity.Type == ActivityTypesEx.InvokeResponse)
                         {
-                            TurnState.Add(BotFrameworkAdapter.InvokeResponseKey, activity);
+                            TurnState.Add(BotAdapter.InvokeResponseKey, activity);
                         }
 
                         responses[index] = new ResourceResponse();
@@ -432,16 +425,7 @@ namespace Microsoft.Bot.Builder
         /// <param name="activity">New replacement activity.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <exception cref="Microsoft.Bot.Schema.ErrorResponseException">
-        /// The HTTP operation failed and the response contained additional information.</exception>
-        /// <exception cref="System.AggregateException">
-        /// One or more exceptions occurred during the operation.</exception>
-        /// <remarks>If the activity is successfully sent, the task result contains
-        /// a <see cref="ResourceResponse"/> object containing the ID that the receiving
-        /// channel assigned to the activity.
-        /// <para>Before calling this, set the ID of the replacement activity to the ID
-        /// of the activity to replace.</para></remarks>
-        public async Task<ResourceResponse> UpdateActivityAsync(IActivity activity, CancellationToken cancellationToken = default)
+        public async Task<ResourceResponse> UpdateActivityAsync(Activity activity, CancellationToken cancellationToken = default)
         {
             if (_disposed)
             {
@@ -467,8 +451,6 @@ namespace Microsoft.Bot.Builder
         /// <param name="activityId">The ID of the activity to delete.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <exception cref="Microsoft.Bot.Schema.ErrorResponseException">
-        /// The HTTP operation failed and the response contained additional information.</exception>
         public async Task DeleteActivityAsync(string activityId, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_disposed)
@@ -498,10 +480,6 @@ namespace Microsoft.Bot.Builder
         /// <param name="conversationReference">The conversation containing the activity to delete.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <exception cref="Microsoft.Bot.Schema.ErrorResponseException">
-        /// The HTTP operation failed and the response contained additional information.</exception>
-        /// <remarks>The conversation reference's <see cref="ConversationReference.ActivityId"/>
-        /// indicates the activity in the conversation to delete.</remarks>
         public async Task DeleteActivityAsync(ConversationReference conversationReference, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_disposed)

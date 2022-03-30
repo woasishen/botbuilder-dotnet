@@ -9,9 +9,9 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Bot.Builder
                 {
                     turnContext.TurnState.Add(InvokeResponseKey, activity);
                 }
-                else if (activity.Type == ActivityTypes.Trace && activity.ChannelId != Channels.Emulator)
+                else if (activity.Type == ActivityTypes.Trace && activity.ChannelId != BotFrameworkChannels.Emulator)
                 {
                     // no-op
                 }
@@ -92,13 +92,13 @@ namespace Microsoft.Bot.Builder
                 {
                     if (!string.IsNullOrWhiteSpace(activity.ReplyToId))
                     {
-                        var connectorClient = turnContext.TurnState.Get<IConnectorClient>();
-                        response = await connectorClient.Conversations.ReplyToActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+                        var connectorClient = turnContext.TurnState.Get<ConnectorClient>();
+                        response = await connectorClient.ReplyToActivityAsync(activity, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
-                        var connectorClient = turnContext.TurnState.Get<IConnectorClient>();
-                        response = await connectorClient.Conversations.SendToConversationAsync(activity, cancellationToken).ConfigureAwait(false);
+                        var connectorClient = turnContext.TurnState.Get<ConnectorClient>();
+                        response = await connectorClient.SendToConversationAsync(activity, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -121,8 +121,8 @@ namespace Microsoft.Bot.Builder
 
             Logger.LogInformation($"UpdateActivityAsync ActivityId: {activity.Id}");
 
-            var connectorClient = turnContext.TurnState.Get<IConnectorClient>();
-            return await connectorClient.Conversations.UpdateActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+            var connectorClient = turnContext.TurnState.Get<ConnectorClient>();
+            return await connectorClient.UpdateActivityAsync(activity, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -133,8 +133,8 @@ namespace Microsoft.Bot.Builder
 
             Logger.LogInformation($"DeleteActivityAsync Conversation Id: {reference.Conversation.Id}, ActivityId: {reference.ActivityId}");
 
-            var connectorClient = turnContext.TurnState.Get<IConnectorClient>();
-            await connectorClient.Conversations.DeleteActivityAsync(reference.Conversation.Id, reference.ActivityId, cancellationToken).ConfigureAwait(false);
+            var connectorClient = turnContext.TurnState.Get<ConnectorClient>();
+            await connectorClient.DeleteActivityAsync(reference.Conversation.Id, reference.ActivityId, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -213,23 +213,22 @@ namespace Microsoft.Bot.Builder
             var connectorFactory = BotFrameworkAuthentication.CreateConnectorFactory(claimsIdentity);
 
             // Create the connector client to use for outbound requests.
-            using (var connectorClient = await connectorFactory.CreateAsync(serviceUrl, audience, cancellationToken).ConfigureAwait(false))
+            var connectorClient = connectorFactory.CreateConnectorClient(new Uri(serviceUrl), audience);
+
+            // Make the actual create conversation call using the connector.
+            var createConversationResult = await connectorClient.CreateConversationAsync(conversationParameters, cancellationToken).ConfigureAwait(false);
+
+            // Create the create activity to communicate the results to the application.
+            var createActivity = CreateCreateActivity(createConversationResult, channelId, serviceUrl, conversationParameters);
+
+            // Create a UserTokenClient instance for the application to use. (For example, in the OAuthPrompt.)
+            var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(claimsIdentity, cancellationToken).ConfigureAwait(false);
+
+            // Create a turn context and run the pipeline.
+            using (var context = CreateTurnContext(createActivity, claimsIdentity, null, connectorClient, userTokenClient, callback, connectorFactory))
             {
-                // Make the actual create conversation call using the connector.
-                var createConversationResult = await connectorClient.Conversations.CreateConversationAsync(conversationParameters, cancellationToken).ConfigureAwait(false);
-
-                // Create the create activity to communicate the results to the application.
-                var createActivity = CreateCreateActivity(createConversationResult, channelId, serviceUrl, conversationParameters);
-
-                // Create a UserTokenClient instance for the application to use. (For example, in the OAuthPrompt.)
-                using (var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(claimsIdentity, cancellationToken).ConfigureAwait(false))
-
-                // Create a turn context and run the pipeline.
-                using (var context = CreateTurnContext(createActivity, claimsIdentity, null, connectorClient, userTokenClient, callback, connectorFactory))
-                {
-                    // Run the pipeline.
-                    await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
-                }
+                // Run the pipeline.
+                await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -269,10 +268,10 @@ namespace Microsoft.Bot.Builder
                 : BotFrameworkAuthentication.CreateConnectorFactory(claimsIdentity);
 
             // Create the connector client to use for outbound requests.
-            using (var connectorClient = await connectorFactory.CreateAsync(continuationActivity.ServiceUrl, audience, cancellationToken).ConfigureAwait(false))
+            var connectorClient = connectorFactory.CreateConnectorClient(new Uri(continuationActivity.ServiceUrl), audience);
 
             // Create a UserTokenClient instance for the application to use. (For example, in the OAuthPrompt.) 
-            using (var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(claimsIdentity, cancellationToken).ConfigureAwait(false))
+            var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(claimsIdentity, cancellationToken).ConfigureAwait(false);
 
             // Create a turn context and run the pipeline.
             using (var context = CreateTurnContext(continuationActivity, claimsIdentity, audience, connectorClient, userTokenClient, callback, connectorFactory))
@@ -315,10 +314,10 @@ namespace Microsoft.Bot.Builder
             activity.CallerId = authenticateRequestResult.CallerId;
 
             // Create the connector client to use for outbound requests.
-            using (var connectorClient = await authenticateRequestResult.ConnectorFactory.CreateAsync(activity.ServiceUrl, authenticateRequestResult.Audience, cancellationToken).ConfigureAwait(false))
+            var connectorClient = authenticateRequestResult.ConnectorFactory.CreateConnectorClient(new Uri(activity.ServiceUrl), authenticateRequestResult.Audience);
 
             // Create a UserTokenClient instance for the application to use. (For example, it would be used in a sign-in prompt.) 
-            using (var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(authenticateRequestResult.ClaimsIdentity, cancellationToken).ConfigureAwait(false))
+            var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(authenticateRequestResult.ClaimsIdentity, cancellationToken).ConfigureAwait(false);
 
             // Create a turn context and run the pipeline.
             using (var context = CreateTurnContext(activity, authenticateRequestResult.ClaimsIdentity, authenticateRequestResult.Audience, connectorClient, userTokenClient, callback, authenticateRequestResult.ConnectorFactory))
@@ -361,13 +360,13 @@ namespace Microsoft.Bot.Builder
             activity.ChannelId = channelId;
             activity.ServiceUrl = serviceUrl;
             activity.Id = createConversationResult.ActivityId ?? Guid.NewGuid().ToString("n");
-            activity.Conversation = new ConversationAccount(id: createConversationResult.Id, tenantId: conversationParameters.TenantId);
+            activity.Conversation = new ConversationAccount { Id = createConversationResult.Id, TenantId = conversationParameters.TenantId };
             activity.ChannelData = conversationParameters.ChannelData;
             activity.Recipient = conversationParameters.Bot;
-            return (Activity)activity;
+            return activity;
         }
 
-        private TurnContext CreateTurnContext(Activity activity, ClaimsIdentity claimsIdentity, string oauthScope, IConnectorClient connectorClient, UserTokenClient userTokenClient, BotCallbackHandler callback, ConnectorFactory connectorFactory)
+        private TurnContext CreateTurnContext(Activity activity, ClaimsIdentity claimsIdentity, string oauthScope, ConnectorClient connectorClient, UserTokenClient userTokenClient, BotCallbackHandler callback, ConnectorFactory connectorFactory)
         {
             var turnContext = new TurnContext(this, activity);
             turnContext.TurnState.Add<IIdentity>(BotIdentityKey, claimsIdentity);
@@ -392,7 +391,14 @@ namespace Microsoft.Bot.Builder
             // Handle ExpectedReplies scenarios where the all the activities have been buffered and sent back at once in an invoke response.
             if (turnContext.Activity.DeliveryMode == DeliveryModes.ExpectReplies)
             {
-                return new InvokeResponse { Status = (int)HttpStatusCode.OK, Body = new ExpectedReplies(turnContext.BufferedReplyActivities) };
+                var body = new ExpectedReplies();
+                body.Activities.Clear();
+                foreach (var activity in turnContext.BufferedReplyActivities)
+                {
+                    body.Activities.Add(activity);
+                }
+
+                return new InvokeResponse { Status = (int)HttpStatusCode.OK, Body = body };
             }
 
             // Handle Invoke scenarios where the Bot will return a specific body and return code.

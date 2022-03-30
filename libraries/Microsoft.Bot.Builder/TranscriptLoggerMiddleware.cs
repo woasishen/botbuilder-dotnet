@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Models;
+using Activity = Microsoft.Bot.Connector.Client.Models.Activity;
 
 namespace Microsoft.Bot.Builder
 {
@@ -16,7 +17,6 @@ namespace Microsoft.Bot.Builder
     /// </summary>
     public class TranscriptLoggerMiddleware : IMiddleware
     {
-        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
         private readonly ITranscriptLogger _logger;
 
         /// <summary>
@@ -36,18 +36,16 @@ namespace Microsoft.Bot.Builder
         /// <param name="cancellationToken">A cancellation token that can be used by other objects
         /// or threads to receive notice of cancellation.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <seealso cref="ITurnContext"/>
-        /// <seealso cref="Bot.Schema.IActivity"/>
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate nextTurn, CancellationToken cancellationToken)
         {
-            var transcript = new Queue<IActivity>();
+            var transcript = new Queue<Activity>();
 
             // log incoming activity at beginning of turn
             if (turnContext.Activity != null)
             {
                 turnContext.Activity.From ??= new ChannelAccount();
 
-                if (string.IsNullOrEmpty((string)turnContext.Activity.From.Properties["role"]) && string.IsNullOrEmpty(turnContext.Activity.From.Role))
+                if (string.IsNullOrEmpty(turnContext.Activity.From.Properties["role"].GetString()) && string.IsNullOrEmpty(turnContext.Activity.From.Role.ToString()))
                 {
                     turnContext.Activity.From.Role = RoleTypes.User;
                 }
@@ -116,7 +114,7 @@ namespace Microsoft.Bot.Builder
         /// <summary>
         /// Helper to sequentially flush the transcript queue to the log.
         /// </summary>
-        private static async Task TryLogTranscriptAsync(ITranscriptLogger logger, Queue<IActivity> transcript)
+        private static async Task TryLogTranscriptAsync(ITranscriptLogger logger, Queue<Activity> transcript)
         {
             try
             {
@@ -135,15 +133,15 @@ namespace Microsoft.Bot.Builder
             }
         }
 
-        private static IActivity CloneActivity(IActivity activity)
+        private static Activity CloneActivity(Activity activity)
         {
-            activity = JsonConvert.DeserializeObject<Activity>(JsonConvert.SerializeObject(activity, _jsonSettings));
+            activity = JsonSerializer.Deserialize<Activity>(JsonSerializer.Serialize(activity, SerializationConfig.DefaultSerializeOptions), SerializationConfig.DefaultDeserializeOptions);
             var activityWithId = EnsureActivityHasId(activity);
 
             return activityWithId;
         }
 
-        private static IActivity EnsureActivityHasId(IActivity activity)
+        private static Activity EnsureActivityHasId(Activity activity)
         {
             var activityWithId = activity;
 
@@ -161,7 +159,7 @@ namespace Microsoft.Bot.Builder
             return activityWithId;
         }
 
-        private static void LogActivity(Queue<IActivity> transcript, IActivity activity)
+        private static void LogActivity(Queue<Activity> transcript, Activity activity)
         {
             activity.Timestamp ??= DateTime.UtcNow;
             transcript.Enqueue(activity);

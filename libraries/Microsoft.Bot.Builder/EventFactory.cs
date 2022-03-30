@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Bot.Builder
 {
@@ -21,7 +19,7 @@ namespace Microsoft.Bot.Builder
         /// <param name="handoffContext">agent hub-specific context.</param>
         /// <param name="transcript">transcript of the conversation.</param>
         /// <returns>handoff event.</returns>
-        public static IEventActivity CreateHandoffInitiation(ITurnContext turnContext, object handoffContext, Transcript transcript = null)
+        public static Activity CreateHandoffInitiation(ITurnContext turnContext, object handoffContext, Transcript transcript = null)
         {
             if (turnContext == null)
             {
@@ -57,7 +55,7 @@ namespace Microsoft.Bot.Builder
         /// <param name="state">State, possible values are: "accepted", "failed", "completed".</param>
         /// <param name="message">Additional message for failed handoff.</param>
         /// <returns>handoff event.</returns>
-        public static IEventActivity CreateHandoffStatus(ConversationAccount conversation, string state, string message = null)
+        public static Activity CreateHandoffStatus(ConversationAccount conversation, string state, string message = null)
         {
             if (conversation == null)
             {
@@ -77,15 +75,15 @@ namespace Microsoft.Bot.Builder
 
         private static Activity CreateHandoffEvent(string name, object value, ConversationAccount conversation)
         {
-            var handoffEvent = Activity.CreateEventActivity() as Activity;
+            var handoffEvent = Activity.CreateEventActivity();
 
             handoffEvent.Name = name;
-            handoffEvent.Value = JObject.FromObject(value);
+            handoffEvent.Value = value.ToJsonElements();
             handoffEvent.Id = Guid.NewGuid().ToString();
             handoffEvent.Timestamp = DateTime.UtcNow;
             handoffEvent.Conversation = conversation;
-            handoffEvent.Attachments = new List<Attachment>();
-            handoffEvent.Entities = new List<Entity>();
+            handoffEvent.Attachments.Clear();
+            handoffEvent.Entities.Clear();
             return handoffEvent;
         }
     }

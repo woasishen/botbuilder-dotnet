@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -40,11 +40,9 @@ namespace Microsoft.Bot.Builder
         /// <param name="cancellationToken">A cancellation token that can be used by other objects
         /// or threads to receive notice of cancellation.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <seealso cref="ITurnContext"/>
-        /// <seealso cref="IActivity"/>
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
         {
-            turnContext.OnSendActivities(async (ctx, activities, nextSend) =>
+            turnContext.OnSendActivities((SendActivitiesHandler)(async (ctx, activities, nextSend) =>
             {
                 foreach (var activity in activities)
                 {
@@ -57,9 +55,9 @@ namespace Microsoft.Bot.Builder
 
                         if (!string.IsNullOrEmpty(activity.Speak)
                             && !string.IsNullOrEmpty(_voiceName)
-                            && (string.Equals(turnContext.Activity.ChannelId, Channels.DirectlineSpeech, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(turnContext.Activity.ChannelId, Channels.Emulator, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(turnContext.Activity.ChannelId, Channels.Telephony, StringComparison.OrdinalIgnoreCase)))
+                            && (string.Equals(turnContext.Activity.ChannelId, BotFrameworkChannels.DirectlineSpeech, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(turnContext.Activity.ChannelId, BotFrameworkChannels.Emulator, StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(turnContext.Activity.ChannelId, BotFrameworkChannels.Telephony, StringComparison.OrdinalIgnoreCase)))
                         {
                             if (!HasTag("speak", activity.Speak))
                             {
@@ -75,7 +73,7 @@ namespace Microsoft.Bot.Builder
                 }
 
                 return await nextSend().ConfigureAwait(false);
-            });
+            }));
 
             await next(cancellationToken).ConfigureAwait(false);
         }

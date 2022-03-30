@@ -7,17 +7,15 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Bot.Builder.Skills
 {
     /// <summary>
-    /// This class inherited all the implementations of <see cref="SkillHandler"/> class since we needed similar code for <see cref="CloudSkillHandler"/>.
-    /// The <see cref="CloudSkillHandler"/> class differs from <see cref="SkillHandler"/> class only in authentication by making use of <see cref="BotFrameworkAuthentication"/> class.
-    /// This class is internal since it is only used in skill handler classes.
+    /// This class is internal since it is only used in <see cref="CloudSkillHandler"/>.
     /// </summary>
     internal class SkillHandlerImpl
     {
@@ -82,7 +80,7 @@ namespace Microsoft.Bot.Builder.Skills
                 turnContext.TurnState.Add(_skillConversationReferenceKey, skillConversationReference);
                 activity.ApplyConversationReference(skillConversationReference.ConversationReference);
                 turnContext.Activity.Id = activityId;
-                turnContext.Activity.CallerId = $"{CallerIdConstants.BotToBotPrefix}{JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims)}";
+                turnContext.Activity.CallerId = $"{CallerIdConstants.BotToBotPrefix}{claimsIdentity.Claims.GetAppIdFromClaims()}";
                 resourceResponse = await turnContext.UpdateActivityAsync(activity, cancellationToken).ConfigureAwait(false);
             });
 
@@ -98,11 +96,23 @@ namespace Microsoft.Bot.Builder.Skills
             // we need to swap the values back to the ones received from the skill so the bot gets the actual activity.
             turnContext.Activity.ChannelData = activity.ChannelData;
             turnContext.Activity.Code = activity.Code;
-            turnContext.Activity.Entities = activity.Entities;
+
+            turnContext.Activity.Entities.Clear();
+            foreach (var entity in activity.Entities)
+            {
+                turnContext.Activity.Entities.Add(entity);
+            }
+
             turnContext.Activity.Locale = activity.Locale;
             turnContext.Activity.LocalTimestamp = activity.LocalTimestamp;
             turnContext.Activity.Name = activity.Name;
-            turnContext.Activity.Properties = activity.Properties;
+
+            turnContext.Activity.Properties.Clear();
+            foreach (var property in activity.Properties)
+            {
+                turnContext.Activity.Properties.Add(property.Key, property.Value);
+            }
+
             turnContext.Activity.RelatesTo = activity.RelatesTo;
             turnContext.Activity.ReplyToId = activity.ReplyToId;
             turnContext.Activity.Timestamp = activity.Timestamp;
@@ -155,34 +165,43 @@ namespace Microsoft.Bot.Builder.Skills
                 turnContext.TurnState.Add(_skillConversationReferenceKey, skillConversationReference);
                 activity.ApplyConversationReference(skillConversationReference.ConversationReference);
                 turnContext.Activity.Id = replyToActivityId;
-                turnContext.Activity.CallerId = $"{CallerIdConstants.BotToBotPrefix}{JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims)}";
-                switch (activity.Type)
+                turnContext.Activity.CallerId = $"{CallerIdConstants.BotToBotPrefix}{claimsIdentity.Claims.GetAppIdFromClaims()}";
+
+                if (activity.Type.HasValue)
                 {
-                    case ActivityTypes.EndOfConversation:
+                    if (activity.Type.Value == ActivityTypes.EndOfConversation)
+                    {
                         await _conversationIdFactory.DeleteConversationReferenceAsync(conversationId, cancellationToken).ConfigureAwait(false);
                         await SendToBotAsync(activity, turnContext, ct).ConfigureAwait(false);
-                        break;
-                    case ActivityTypes.Event:
+                    }
+                    else if (activity.Type.Value == ActivityTypes.Event)
+                    {
                         await SendToBotAsync(activity, turnContext, ct).ConfigureAwait(false);
-                        break;
-                    case ActivityTypes.Command:
-                    case ActivityTypes.CommandResult:
-                        if (activity.Name.StartsWith("application/", StringComparison.Ordinal))
-                        {
-                            // Send to channel and capture the resource response for the SendActivityCall so we can return it.
-                            resourceResponse = await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await SendToBotAsync(activity, turnContext, ct).ConfigureAwait(false);
-                        }
+                    }
 
-                        break;
-
-                    default:
+                    // TODO: add these to ActivityTypes OpenAPI spec
+                    //else if (activity.Type.Value == ActivityTypes.Command || activity.Type.Value == ActivityTypes.CommandResult)
+                    //{
+                    //    if (activity.Name.StartsWith("application/", StringComparison.Ordinal))
+                    //    {
+                    //        // Send to channel and capture the resource response for the SendActivityCall so we can return it.
+                    //        resourceResponse = await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+                    //    }
+                    //    else
+                    //    {
+                    //        await SendToBotAsync(activity, turnContext, ct).ConfigureAwait(false);
+                    //    }
+                    //}
+                    else
+                    {
                         // Capture the resource response for the SendActivityCall so we can return it.
                         resourceResponse = await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
-                        break;
+                    }
+                }
+                else
+                {
+                    // Capture the resource response for the SendActivityCall so we can return it.
+                    resourceResponse = await turnContext.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
                 }
             });
 

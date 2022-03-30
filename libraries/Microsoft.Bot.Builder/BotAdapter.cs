@@ -6,7 +6,8 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -26,7 +27,6 @@ namespace Microsoft.Bot.Builder
     /// logic runs.</para>
     /// </remarks>
     /// <seealso cref="ITurnContext"/>
-    /// <seealso cref="IActivity"/>
     /// <seealso cref="IBot"/>
     /// <seealso cref="IMiddleware"/>
     public abstract class BotAdapter
@@ -262,7 +262,7 @@ namespace Microsoft.Bot.Builder
         /// then sends a <c>conversationUpdate</c> activity through its middleware pipeline
         /// to the <paramref name="callback"/> method.</para>
         /// <para>If the conversation is established with the
-        /// specified users, the ID of the activity's <see cref="IActivity.Conversation"/>
+        /// specified users, the ID of the activity's <see cref="Activity.Conversation"/>
         /// will contain the ID of the new conversation.</para>
         /// </remarks>
         public virtual Task CreateConversationAsync(string botAppId, string channelId, string serviceUrl, string audience, ConversationParameters conversationParameters, BotCallbackHandler callback, CancellationToken cancellationToken)

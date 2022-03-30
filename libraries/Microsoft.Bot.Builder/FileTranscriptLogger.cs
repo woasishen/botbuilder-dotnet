@@ -7,9 +7,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Models;
+using Activity = Microsoft.Bot.Connector.Client.Models.Activity;
 
 namespace Microsoft.Bot.Builder
 {
@@ -21,12 +22,6 @@ namespace Microsoft.Bot.Builder
     /// </remarks>
     public class FileTranscriptLogger : ITranscriptStore
     {
-        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings()
-        {
-            Formatting = Formatting.Indented,
-            NullValueHandling = NullValueHandling.Ignore,
-        };
-
         private readonly string _folder;
         private readonly bool _unitTestMode;
         private readonly HashSet<string> _started = new HashSet<string>();
@@ -59,7 +54,7 @@ namespace Microsoft.Bot.Builder
         /// </summary>
         /// <param name="activity">The activity to transcribe.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        public async Task LogActivityAsync(IActivity activity)
+        public async Task LogActivityAsync(Activity activity)
         {
             if (activity == null)
             {
@@ -91,26 +86,36 @@ namespace Microsoft.Bot.Builder
                         {
                             using (var writer = new StreamWriter(stream) as TextWriter)
                             {
-                                await writer.WriteAsync($"[{JsonConvert.SerializeObject(activity, _jsonSettings)}]").ConfigureAwait(false);
+                                await writer.WriteAsync($"[{JsonSerializer.Serialize(activity, SerializationConfig.DefaultSerializeOptions)}]").ConfigureAwait(false);
                                 return;
                             }
                         }
                     }
 
-                    switch (activity.Type)
+                    if (activity.Type.HasValue)
                     {
-                        case ActivityTypes.MessageDelete:
+                        if (activity.Type.Value == ActivityTypes.MessageDelete)
+                        {
                             await MessageDeleteAsync(activity, transcriptFile).ConfigureAwait(false);
                             return;
-
-                        case ActivityTypes.MessageUpdate:
+                        }
+                        else if (activity.Type.Value == ActivityTypes.MessageUpdate)
+                        {
                             await MessageUpdateAsync(activity, transcriptFile).ConfigureAwait(false);
                             return;
-
-                        default:
+                        }
+                        else
+                        {
                             // append
                             await LogActivityAsync(activity, transcriptFile).ConfigureAwait(false);
                             return;
+                        }
+                    }
+                    else
+                    {
+                        // append
+                        await LogActivityAsync(activity, transcriptFile).ConfigureAwait(false);
+                        return;
                     }
                 }
 #pragma warning disable CA1031 // Do not catch general exception types (we ignore the exception and we retry)
@@ -132,14 +137,14 @@ namespace Microsoft.Bot.Builder
         /// <param name="startDate">A cutoff date. Activities older than this date are not included.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
         /// <remarks>If the task completes successfully, the result contains the matching activities.</remarks>
-        public async Task<PagedResult<IActivity>> GetTranscriptActivitiesAsync(string channelId, string conversationId, string continuationToken = null, DateTimeOffset startDate = default(DateTimeOffset))
+        public async Task<PagedResult<Activity>> GetTranscriptActivitiesAsync(string channelId, string conversationId, string continuationToken = null, DateTimeOffset startDate = default(DateTimeOffset))
         {
             var transcriptFile = GetTranscriptFile(channelId, conversationId);
 
             var transcript = await LoadTranscriptAsync(transcriptFile).ConfigureAwait(false);
-            var result = new PagedResult<IActivity>();
+            var result = new PagedResult<Activity>();
             result.ContinuationToken = null;
-            result.Items = transcript.Where(activity => activity.Timestamp >= startDate).Cast<IActivity>().ToArray();
+            result.Items = transcript.Where(activity => activity.Timestamp >= startDate).Cast<Activity>().ToArray();
             return result;
         }
 
@@ -194,7 +199,7 @@ namespace Microsoft.Bot.Builder
                     using (var reader = new StreamReader(stream) as TextReader)
                     {
                         var json = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        return JsonConvert.DeserializeObject<Activity[]>(json);
+                        return JsonSerializer.Deserialize<Activity[]>(json, SerializationConfig.DefaultDeserializeOptions);
                     }
                 }
             }
@@ -202,9 +207,9 @@ namespace Microsoft.Bot.Builder
             return Array.Empty<Activity>();
         }
 
-        private static async Task LogActivityAsync(IActivity activity, string transcriptFile)
+        private static async Task LogActivityAsync(Activity activity, string transcriptFile)
         {
-            var json = $",\n{JsonConvert.SerializeObject(activity, _jsonSettings)}]";
+            var json = $",\n{JsonSerializer.Serialize(activity, SerializationConfig.DefaultSerializeOptions)}]";
 
             using (var stream = File.Open(transcriptFile, FileMode.OpenOrCreate))
             {
@@ -220,7 +225,7 @@ namespace Microsoft.Bot.Builder
             }
         }
 
-        private static async Task MessageUpdateAsync(IActivity activity, string transcriptFile)
+        private static async Task MessageUpdateAsync(Activity activity, string transcriptFile)
         {
             // load all activities
             var transcript = await LoadTranscriptAsync(transcriptFile).ConfigureAwait(false);
@@ -230,12 +235,12 @@ namespace Microsoft.Bot.Builder
                 var originalActivity = transcript[i];
                 if (originalActivity.Id == activity.Id)
                 {
-                    var updatedActivity = JsonConvert.DeserializeObject<Activity>(JsonConvert.SerializeObject(activity));
+                    var updatedActivity = JsonSerializer.Deserialize<Activity>(JsonSerializer.Serialize(activity, SerializationConfig.DefaultSerializeOptions));
                     updatedActivity.Type = originalActivity.Type; // fixup original type (should be Message)
                     updatedActivity.LocalTimestamp = originalActivity.LocalTimestamp;
                     updatedActivity.Timestamp = originalActivity.Timestamp;
                     transcript[i] = updatedActivity;
-                    var json = JsonConvert.SerializeObject(transcript, _jsonSettings);
+                    var json = JsonSerializer.Serialize(transcript, SerializationConfig.DefaultSerializeOptions);
                     using (var stream = File.OpenWrite(transcriptFile))
                     {
                         using (var writer = new StreamWriter(stream) as TextWriter)
@@ -248,7 +253,7 @@ namespace Microsoft.Bot.Builder
             }
         }
 
-        private static async Task MessageDeleteAsync(IActivity activity, string transcriptFile)
+        private static async Task MessageDeleteAsync(Activity activity, string transcriptFile)
         {
             // load all activities
             var transcript = await LoadTranscriptAsync(transcriptFile).ConfigureAwait(false);
@@ -264,8 +269,8 @@ namespace Microsoft.Bot.Builder
                     {
                         Type = ActivityTypes.MessageDelete,
                         Id = originalActivity.Id,
-                        From = new ChannelAccount(id: "deleted", role: originalActivity.From.Role),
-                        Recipient = new ChannelAccount(id: "deleted", role: originalActivity.Recipient.Role),
+                        From = new ChannelAccount { Id = "deleted", Role = originalActivity.From.Role },
+                        Recipient = new ChannelAccount { Id = "deleted", Role = originalActivity.Recipient.Role },
                         Locale = originalActivity.Locale,
                         LocalTimestamp = originalActivity.Timestamp,
                         Timestamp = originalActivity.Timestamp,
@@ -274,7 +279,7 @@ namespace Microsoft.Bot.Builder
                         ServiceUrl = originalActivity.ServiceUrl,
                         ReplyToId = originalActivity.ReplyToId,
                     };
-                    var json = JsonConvert.SerializeObject(transcript, _jsonSettings);
+                    var json = JsonSerializer.Serialize(transcript, SerializationConfig.DefaultSerializeOptions);
                     using (var stream = File.OpenWrite(transcriptFile))
                     {
                         using (var writer = new StreamWriter(stream) as TextWriter)

@@ -3,14 +3,9 @@
 
 using System;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -67,8 +62,13 @@ namespace Microsoft.Bot.Builder
                     if (activity.Entities != null)
                     {
                         // strip entity.mention records for recipient id.
-                        activity.Entities = activity.Entities.Where(entity => entity.Type == "mention" &&
+                        var mentions = activity.Entities.Where(entity => entity.Type == "mention" &&
                            ((dynamic)entity.Properties["mentioned"]).id != activity.Recipient.Id).ToList();
+                        activity.Entities.Clear();
+                        foreach (var mention in mentions)
+                        {
+                            activity.Entities.Add(mention);
+                        }
                     }
                 }
 
@@ -82,8 +82,11 @@ namespace Microsoft.Bot.Builder
                     {
                         if (entity.Type == "mention")
                         {
-                            string entityText = (string)entity.Properties["text"];
-                            entity.Properties["text"] = RemoveAt(entityText)?.Trim();
+                            string entityText = entity.Properties["text"].GetString();
+                            foreach (var element in new { text = RemoveAt(entityText)?.Trim() }.ToJsonElements())
+                            {
+                                entity.Properties["text"] = element.Value;
+                            }
                         }
                     }
                 }

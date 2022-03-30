@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder.Integration.AspNet.Core
 {
@@ -19,7 +19,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelServiceController"/> class.
         /// </summary>
-        /// <param name="handler">A <see cref="ChannelServiceHandler"/> that will handle the incoming request.</param>
+        /// <param name="handler">A <see cref="ChannelServiceHandlerBase"/> that will handle the incoming request.</param>
         protected ChannelServiceController(ChannelServiceHandlerBase handler)
         {
             _handler = handler;
@@ -35,7 +35,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> SendToConversationAsync(string conversationId, [FromBody] Activity activity)
         {
             var result = await _handler.HandleSendToConversationAsync(HttpContext.Request.Headers["Authorization"], conversationId, activity).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> ReplyToActivityAsync(string conversationId, string activityId, [FromBody] Activity activity)
         {
             var result = await _handler.HandleReplyToActivityAsync(HttpContext.Request.Headers["Authorization"], conversationId, activityId, activity).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> UpdateActivityAsync(string conversationId, string activityId, [FromBody] Activity activity)
         {
             var result = await _handler.HandleUpdateActivityAsync(HttpContext.Request.Headers["Authorization"], conversationId, activityId, activity).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> GetActivityMembersAsync(string conversationId, string activityId)
         {
             var result = await _handler.HandleGetActivityMembersAsync(HttpContext.Request.Headers["Authorization"], conversationId, activityId).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> CreateConversationAsync([FromBody] ConversationParameters parameters)
         {
             var result = await _handler.HandleCreateConversationAsync(HttpContext.Request.Headers["Authorization"], parameters).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> GetConversationsAsync(string continuationToken = null)
         {
             var result = await _handler.HandleGetConversationsAsync(HttpContext.Request.Headers["Authorization"], continuationToken).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> GetConversationMembersAsync(string conversationId)
         {
             var result = await _handler.HandleGetConversationMembersAsync(HttpContext.Request.Headers["Authorization"], conversationId).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> GetConversationPagedMembersAsync(string conversationId, int pageSize = -1, string continuationToken = null)
         {
             var result = await _handler.HandleGetConversationPagedMembersAsync(HttpContext.Request.Headers["Authorization"], conversationId, pageSize, continuationToken).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> SendConversationHistoryAsync(string conversationId, [FromBody] Transcript history)
         {
             var result = await _handler.HandleSendConversationHistoryAsync(HttpContext.Request.Headers["Authorization"], conversationId, history).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         public virtual async Task<IActionResult> UploadAttachmentAsync(string conversationId, [FromBody] AttachmentData attachmentUpload)
         {
             var result = await _handler.HandleUploadAttachmentAsync(HttpContext.Request.Headers["Authorization"], conversationId, attachmentUpload).ConfigureAwait(false);
-            return new JsonResult(result, HttpHelper.BotMessageSerializerSettings);
+            return new JsonResult(result);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -32,9 +33,9 @@ namespace Microsoft.Bot.Builder
         /// Conversation state includes the channel ID and conversation ID as part of its storage key.
         /// </remarks>
         /// <exception cref="ArgumentNullException">The <see cref="ITurnContext.Activity"/> for the
-        /// current turn is missing <see cref="Schema.Activity.ChannelId"/> or
-        /// <see cref="Schema.Activity.Conversation"/> information, or the conversation's
-        /// <see cref="Schema.ConversationAccount.Id"/> is missing.</exception>
+        /// current turn is missing <see cref="Activity.ChannelId"/> or
+        /// <see cref="Activity.Conversation"/> information, or the conversation's
+        /// <see cref="ConversationAccount.Id"/> is missing.</exception>
         protected override string GetStorageKey(ITurnContext turnContext)
         {
             var channelId = turnContext.Activity.ChannelId ?? throw new InvalidOperationException("invalid activity-missing channelId");

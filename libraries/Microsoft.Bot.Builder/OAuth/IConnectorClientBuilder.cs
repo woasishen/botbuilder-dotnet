@@ -2,12 +2,10 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector;
+using Microsoft.Bot.Connector.Client;
 
 namespace Microsoft.Bot.Builder.OAuth
 {
@@ -25,6 +23,6 @@ namespace Microsoft.Bot.Builder.OAuth
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>ConnectorClient instance.</returns>
         /// <exception cref="NotSupportedException">ClaimsIdentity cannot be null. Pass Anonymous ClaimsIdentity if authentication is turned off.</exception>
-        Task<IConnectorClient> CreateConnectorClientAsync(string serviceUrl, ClaimsIdentity claimsIdentity, string audience, CancellationToken cancellationToken = default);
+        Task<ConnectorClient> CreateConnectorClientAsync(string serviceUrl, ClaimsIdentity claimsIdentity, string audience, CancellationToken cancellationToken = default);
     }
 }

@@ -5,8 +5,8 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -37,17 +37,20 @@ namespace Microsoft.Bot.Builder
         /// <param name="activity">The activity containing the mentions to normalize.</param>
         public static void NormalizeSkypMentionText(Activity activity)
         {
-            if (activity.ChannelId == Channels.Skype && activity.Type == ActivityTypes.Message)
+            if (activity.ChannelId == BotFrameworkChannels.Skype && activity.Type == ActivityTypes.Message)
             {
                 foreach (var entity in activity.Entities)
                 {
                     if (entity.Type == "mention")
                     {
-                        string text = (string)entity.Properties["text"];
+                        string text = entity.Properties["text"].GetString();
                         var mentionNameMatch = Regex.Match(text, @"(?<=<at.*>)(.*?)(?=<\/at>)", RegexOptions.IgnoreCase);
                         if (mentionNameMatch.Success)
                         {
-                            entity.Properties["text"] = mentionNameMatch.Value;
+                            foreach (var element in new { t = mentionNameMatch.Value }.ToJsonElements())
+                            {
+                                entity.Properties["text"] = element.Value;
+                            }
                         }
                     }
                 }

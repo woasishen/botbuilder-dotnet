@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Bot.Builder.Skills
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Bot.Builder.Skills
         /// <value>
         /// Id of the skill.
         /// </value>
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.Bot.Builder.Skills
         /// <value>
         /// AppId of the skill.
         /// </value>
-        [JsonProperty("appId")]
+        [JsonPropertyName("appId")]
         public string AppId { get; set; }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Microsoft.Bot.Builder.Skills
         /// <value>
         /// /api/messages endpoint for the skill.
         /// </value>
-        [JsonProperty("skillEndpoint")]
+        [JsonPropertyName("skillEndpoint")]
         public Uri SkillEndpoint { get; set; }
     }
 }

@@ -11,10 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder.Streaming;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Bot.Connector.Client;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Bot.Connector.Streaming.Application;
-using Microsoft.Bot.Schema;
 using Microsoft.Bot.Streaming;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -49,20 +49,6 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CloudAdapter"/> class.
-        /// </summary>
-        /// <param name="configuration">The <see cref="IConfiguration"/> instance.</param>
-        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> this adapter should use.</param>
-        /// <param name="logger">The <see cref="ILogger"/> implementation this adapter should use.</param>
-        public CloudAdapter(
-            IConfiguration configuration,
-            IHttpClientFactory httpClientFactory = null,
-            ILogger logger = null)
-            : this(new ConfigurationBotFrameworkAuthentication(configuration, httpClientFactory: httpClientFactory, logger: logger), logger)
-        {
-        }
-
-        /// <summary>
         /// Process the inbound HTTP request with the bot resulting in the outbound http response, this method can be called directly from a Controller.
         /// If the HTTP method is a POST the body will contain the <see cref="Activity"/> to process. 
         /// </summary>
@@ -91,7 +77,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                     var activity = await HttpHelper.ReadRequestAsync<Activity>(httpRequest).ConfigureAwait(false);
 
                     // A POST request must contain an Activity 
-                    if (string.IsNullOrEmpty(activity?.Type))
+                    if (string.IsNullOrEmpty(activity?.Type.ToString()))
                     {
                         httpResponse.StatusCode = (int)HttpStatusCode.BadRequest;
                         Logger.LogWarning("BadRequest: Missing activity or activity type.");
@@ -291,13 +277,13 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                     _requestHandler = requestHandler;
                 }
 
-                public override Task<IConnectorClient> CreateAsync(string serviceUrl, string audience, CancellationToken cancellationToken)
+                public override ConnectorClient CreateConnectorClient(Uri serviceUrl, string audience)
                 {
                     if (_serviceUrl == null)
                     {
-                        _serviceUrl = serviceUrl;
+                        _serviceUrl = serviceUrl.AbsoluteUri;
                     }
-                    else if (!_serviceUrl.Equals(serviceUrl, StringComparison.OrdinalIgnoreCase))
+                    else if (!_serviceUrl.Equals(serviceUrl.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
                     {
                         throw new NotSupportedException("This is a streaming scenario, all connectors from this factory must all be for the same url.");
                     }
@@ -306,7 +292,12 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                     var streamingHttpClient = new StreamingHttpClient(_requestHandler);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-                    return Task.FromResult<IConnectorClient>(new ConnectorClient(MicrosoftAppCredentials.Empty, streamingHttpClient, false));
+                    throw new NotImplementedException();
+                }
+
+                public override UserTokenClient CreateUserTokenClient(Uri oAuthUrl, string appId)
+                {
+                    throw new NotImplementedException();
                 }
 
                 private class StreamingHttpClient : HttpClient

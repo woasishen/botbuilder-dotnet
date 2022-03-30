@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder.TraceExtensions
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Bot.Builder.TraceExtensions
         /// <param name="turnContext">The context for the current turn.</param>
         /// <param name="name">The value to assign to the activity's <see cref="Activity.Name"/> property.</param>
         /// <param name="value">The value to assign to the activity's <see cref="Activity.Value"/> property.</param>
-        /// <param name="valueType">The value to assign to the activity's <see cref="Activity.ValueType"/> property.</param>
+        /// <param name="valueType">The value to assign to the activity's <see cref="ValueType"/> property.</param>
         /// <param name="label">The value to assign to the activity's <see cref="Activity.Label"/> property.</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects
         /// or threads to receive notice of cancellation.</param>

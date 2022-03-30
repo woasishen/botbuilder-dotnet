@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder.Skills
 {
@@ -43,9 +43,9 @@ namespace Microsoft.Bot.Builder.Skills
         }
 
         /// <summary>
-        /// Gets the <see cref="ConversationReference"/> created using <see cref="CreateSkillConversationIdAsync(Microsoft.Bot.Schema.ConversationReference,System.Threading.CancellationToken)"/> for a skillConversationId.
+        /// Gets the <see cref="ConversationReference"/> created using <see cref="CreateSkillConversationIdAsync(ConversationReference,System.Threading.CancellationToken)"/> for a skillConversationId.
         /// </summary>
-        /// <param name="skillConversationId">A skill conversationId created using <see cref="CreateSkillConversationIdAsync(Microsoft.Bot.Schema.ConversationReference,System.Threading.CancellationToken)"/>.</param>
+        /// <param name="skillConversationId">A skill conversationId created using <see cref="CreateSkillConversationIdAsync(ConversationReference,System.Threading.CancellationToken)"/>.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The caller's <see cref="ConversationReference"/> for a skillConversationId. null if not found.</returns>
         [Obsolete("Method is deprecated, please use GetSkillConversationReferenceAsync() instead.", false)]

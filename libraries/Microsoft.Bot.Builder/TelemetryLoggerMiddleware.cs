@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Connector;
-using Microsoft.Bot.Schema;
-using Microsoft.Bot.Schema.Teams;
-using Newtonsoft.Json;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -56,8 +56,6 @@ namespace Microsoft.Bot.Builder
         /// <param name="cancellationToken">A cancellation token that can be used by other objects
         /// or threads to receive notice of cancellation.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
-        /// <seealso cref="ITurnContext"/>
-        /// <seealso cref="Bot.Schema.IActivity"/>
         public virtual async Task OnTurnAsync(ITurnContext context, NextDelegate nextTurn, CancellationToken cancellationToken)
         {
             BotAssert.ContextNotNull(context);
@@ -205,7 +203,7 @@ namespace Microsoft.Bot.Builder
                 { TelemetryConstants.LocaleProperty, activity.Locale },
                 { TelemetryConstants.RecipientIdProperty, activity.Recipient?.Id },
                 { TelemetryConstants.RecipientNameProperty, activity.Recipient?.Name },
-                { TelemetryConstants.ActivityTypeProperty, activity.Type },
+                { TelemetryConstants.ActivityTypeProperty, activity.Type.ToString() },
             };
 
             // Use the LogPersonalInformation flag to toggle logging PII data, text and user name are common examples
@@ -227,8 +225,6 @@ namespace Microsoft.Bot.Builder
                 }
             }
 
-            PopulateAdditionalChannelProperties(activity, properties);
-            
             // Additional Properties can override "stock" properties.
             if (additionalProperties != null)
             {
@@ -261,7 +257,7 @@ namespace Microsoft.Bot.Builder
                     { TelemetryConstants.RecipientIdProperty, activity.Recipient?.Id },
                     { TelemetryConstants.ConversationNameProperty, activity.Conversation?.Name },
                     { TelemetryConstants.LocaleProperty, activity.Locale },
-                    { TelemetryConstants.ActivityTypeProperty, activity.Type },
+                    { TelemetryConstants.ActivityTypeProperty, activity.Type.ToString() },
                 };
 
             // Use the LogPersonalInformation flag to toggle logging PII data, text and user name are common examples
@@ -284,7 +280,7 @@ namespace Microsoft.Bot.Builder
 
                 if (activity.Attachments != null && activity.Attachments.Any())
                 {
-                    properties.Add(TelemetryConstants.AttachmentsProperty, JsonConvert.SerializeObject(activity.Attachments));
+                    properties.Add(TelemetryConstants.AttachmentsProperty, JsonSerializer.Serialize(activity.Attachments, SerializationConfig.DefaultSerializeOptions));
                 }
             }
 
@@ -319,7 +315,7 @@ namespace Microsoft.Bot.Builder
                     { TelemetryConstants.ConversationIdProperty, activity.Conversation?.Id },
                     { TelemetryConstants.ConversationNameProperty, activity.Conversation?.Name },
                     { TelemetryConstants.LocaleProperty, activity.Locale },
-                    { TelemetryConstants.ActivityTypeProperty, activity.Type },
+                    { TelemetryConstants.ActivityTypeProperty, activity.Type.ToString() },
                 };
 
             // Use the LogPersonalInformation flag to toggle logging PII data, text is a common example
@@ -346,7 +342,7 @@ namespace Microsoft.Bot.Builder
         /// <param name="additionalProperties">Additional properties to add to the event.</param>
         /// <returns>The properties and their values to log when the bot deletes a message it sent previously.</returns>
 #pragma warning disable CA1822 // Mark members as static (can't change this without breaking binary compat)
-        protected Task<Dictionary<string, string>> FillDeleteEventPropertiesAsync(IMessageDeleteActivity activity, Dictionary<string, string> additionalProperties = null)
+        protected Task<Dictionary<string, string>> FillDeleteEventPropertiesAsync(Activity activity, Dictionary<string, string> additionalProperties = null)
 #pragma warning restore CA1822 // Mark members as static
         {
             if (activity == null)
@@ -359,7 +355,7 @@ namespace Microsoft.Bot.Builder
                     { TelemetryConstants.RecipientIdProperty, activity.Recipient?.Id },
                     { TelemetryConstants.ConversationIdProperty, activity.Conversation?.Id },
                     { TelemetryConstants.ConversationNameProperty, activity.Conversation?.Name },
-                    { TelemetryConstants.ActivityTypeProperty, activity.Type },
+                    { TelemetryConstants.ActivityTypeProperty, activity.Type.ToString() },
                 };
 
             // Additional Properties can override "stock" properties.
@@ -371,25 +367,6 @@ namespace Microsoft.Bot.Builder
             }
 
             return Task.FromResult(properties);
-        }
-
-        private static void PopulateAdditionalChannelProperties(Activity activity, Dictionary<string, string> properties)
-        {
-            switch (activity.ChannelId)
-            {
-                case Channels.Msteams:
-                    var teamsChannelData = activity.GetChannelData<TeamsChannelData>();
-                    
-                    properties.Add("TeamsTenantId", teamsChannelData?.Tenant?.Id);
-                    properties.Add("TeamsUserAadObjectId", activity.From?.AadObjectId);
-
-                    if (teamsChannelData?.Team != null)
-                    {
-                        properties.Add("TeamsTeamInfo", JsonConvert.SerializeObject(teamsChannelData.Team));
-                    }
-
-                    break;
-            }
         }
     }
 }

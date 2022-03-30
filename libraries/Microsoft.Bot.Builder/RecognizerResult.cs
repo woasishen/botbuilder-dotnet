@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Bot.Builder
 {
@@ -19,7 +19,7 @@ namespace Microsoft.Bot.Builder
         /// <value>
         /// Original text to recognizer.
         /// </value>
-        [JsonProperty("text")]
+        [JsonPropertyName("text")]
         public string Text { get; set; }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Bot.Builder
         /// <value>
         /// Text modified by recognizer.
         /// </value>
-        [JsonProperty("alteredText")]
+        [JsonPropertyName("alteredText")]
         public string AlteredText { get; set; }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.Bot.Builder
         /// <value>
         /// Mapping from intent to information about the intent.
         /// </value>
-        [JsonProperty("intents")]
+        [JsonPropertyName("intents")]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
         public IDictionary<string, IntentScore> Intents { get; set; } = new Dictionary<string, IntentScore>();
 #pragma warning restore CA2227 // Collection properties should be read only
@@ -48,9 +48,9 @@ namespace Microsoft.Bot.Builder
         /// <value>
         /// Object with each top-level recognized entity as a key.
         /// </value>
-        [JsonProperty("entities")]
+        [JsonPropertyName("entities")]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
-        public JObject Entities { get; set; } = new JObject();
+        public Dictionary<string, JsonElement> Entities { get; set; } = new Dictionary<string, JsonElement>();
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace Microsoft.Bot.Builder
         /// <remarks>With this, properties not represented in the defined type are not dropped when
         /// the JSON object is deserialized, but are instead stored in this property. Such properties
         /// will be written to a JSON object when the instance is serialized.</remarks>
-        [JsonExtensionData(ReadData = true, WriteData = true)]
+        [JsonExtensionData]
 #pragma warning disable CA2227 // Collection properties should be read only (we can't change this without breaking binary compat)
-        public IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public IDictionary<string, JsonElement> Properties { get; set; } = new Dictionary<string, JsonElement>();
 #pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>

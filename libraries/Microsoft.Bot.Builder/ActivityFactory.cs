@@ -3,8 +3,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Xml.Linq;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Bot.Builder
 {
@@ -46,7 +49,7 @@ namespace Microsoft.Bot.Builder
 
             try
             {
-                var lgJsonResult = JObject.FromObject(lgResult);
+                var lgJsonResult = lgResult.ToJsonElements();
                 return BuildActivityFromLGStructuredResult(lgJsonResult);
             }
 #pragma warning disable CA1031 // Do not catch general exception types (we should narrow down the exception being caught but for now we just attempt to build the activity from the text property)
@@ -77,7 +80,7 @@ namespace Microsoft.Bot.Builder
         /// This method will create an MessageActivity from JToken
         /// <param name="lgJObj">lg output.</param>
         /// <returns>Activity for it.</returns>
-        private static Activity BuildActivityFromLGStructuredResult(JObject lgJObj)
+        private static Activity BuildActivityFromLGStructuredResult(Dictionary<string, JsonElement> lgJObj)
         {
             var activity = new Activity();
             var type = GetStructureType(lgJObj);
@@ -92,9 +95,10 @@ namespace Microsoft.Bot.Builder
                 activity = BuildActivity(lgJObj);
 
                 // InvokeResponse requires value to be a InvokeResponse typed object. 
-                if (activity.Type == ActivityTypesEx.InvokeResponse && activity.Value != null)
+                // TODO: Create ActivityTypes.InvokeResponse and ActivityTypes.Delay
+                if (activity.Type == "invokeResponse" && activity.Value != null)
                 {
-                    activity.Value = JObject.FromObject(activity.Value).ToObject<InvokeResponse>();
+                    activity.Value = activity.Value.ToJsonElements().ToObject<InvokeResponse>();
                 }
             }
             else
@@ -105,12 +109,9 @@ namespace Microsoft.Bot.Builder
             return activity;
         }
 
-        private static Activity BuildActivity(JObject lgJObj)
+        private static Activity BuildActivity(Dictionary<string, JsonElement> lgJObj)
         {
-            var activity = new JObject
-            {
-                ["type"] = ActivityTypes.Message
-            };
+            var activity = new { type = ActivityTypes.Message.ToString() }.ToJsonElements();
 
             foreach (var item in lgJObj)
             {
@@ -125,10 +126,19 @@ namespace Microsoft.Bot.Builder
                 switch (property.ToLowerInvariant())
                 {
                     case "attachments":
-                        activity["attachments"] = JArray.FromObject(GetAttachments(value));
+                        foreach (var element in new { attachments = GetAttachments(value) }.ToJsonElements())
+                        {
+                            activity[element.Key] = element.Value;
+                        }
+
                         break;
+
                     case "suggestedactions":
-                        activity["suggestedActions"] = JObject.FromObject(GetSuggestions(value));
+                        foreach (var element in new { suggestedActions = GetSuggestions(value) }.ToJsonElements())
+                        {
+                            activity[element.Key] = element.Value;
+                        }
+
                         break;
                     default:
                         activity[property] = value;
@@ -139,75 +149,75 @@ namespace Microsoft.Bot.Builder
             return activity.ToObject<Activity>();
         }
 
-        private static SuggestedActions GetSuggestions(JToken value)
+        private static SuggestedActions GetSuggestions(JsonElement value)
         {
             var actions = NormalizedToList(value);
 
-            var suggestedActions = new SuggestedActions()
+            var suggestedActions = new SuggestedActions();
+            foreach (var cardAction in GetCardActions(actions))
             {
-                Actions = GetCardActions(actions)
-            };
+                suggestedActions.Actions.Add(cardAction);
+            }
 
             return suggestedActions;
         }
 
-        private static IList<CardAction> GetButtons(JToken value)
+        private static IList<CardAction> GetButtons(JsonElement value)
         {
             var actions = NormalizedToList(value);
             return GetCardActions(actions);
         }
 
-        private static IList<CardAction> GetCardActions(IList<JToken> actions)
+        private static IList<CardAction> GetCardActions(IList<JsonElement> actions)
         {
-            return actions.Select(u => GetCardAction(u)).ToList();
+            return actions.Select(GetCardAction).ToList();
         }
 
-        private static CardAction GetCardAction(JToken cardActionJtoken)
+        private static CardAction GetCardAction(JsonElement cardActionElement)
         {
-            var cardAction = new CardAction();
-            if (IsStringValue(cardActionJtoken, out var actionStr))
+            if (cardActionElement.ValueKind == JsonValueKind.String)
             {
-                cardAction = new CardAction(type: ActionTypes.ImBack, value: actionStr, title: actionStr);
+                var action = cardActionElement.GetString();
+                return new CardAction { Type = ActionTypes.ImBack, Value = action, Title = action };
             }
-            else if (cardActionJtoken is JObject actionJObj)
+            
+            if (cardActionElement.ValueKind == JsonValueKind.Object)
             {
-                var type = GetStructureType(actionJObj);
-                var cardActionJson = new JObject()
-                {
-                    ["type"] = ActionTypes.ImBack
-                };
+                var action = cardActionElement.ToJsonElements();
+                var structure = GetStructureType(action);
+                var cardAction = new { type = ActionTypes.ImBack }.ToJsonElements();
 
-                if (type == nameof(CardAction).ToLowerInvariant())
+                if (structure == nameof(CardAction).ToLowerInvariant())
                 {
-                    foreach (var item in actionJObj)
+                    foreach (var item in action)
                     {
-                        cardActionJson[item.Key.Trim()] = item.Value;
+                        cardAction[item.Key.Trim()] = item.Value;
                     }
 
-                    cardAction = cardActionJson.ToObject<CardAction>();
+                    return cardAction.ToObject<CardAction>();
                 }
             }
 
-            return cardAction;
+            return new CardAction();
         }
 
-        private static IList<Attachment> GetAttachments(JToken value)
+        private static IList<Attachment> GetAttachments(JsonElement value)
         {
             var attachments = new List<Attachment>();
             var attachmentsJsonList = NormalizedToList(value);
 
             foreach (var attachmentsJson in attachmentsJsonList)
             {
-                if (attachmentsJson is JObject attachmentsJsonJObj)
+                if (attachmentsJson.ValueKind == JsonValueKind.Object)
                 {
-                    attachments.Add(GetAttachment(attachmentsJsonJObj));
+                    attachments.Add(GetAttachment(attachmentsJson.ToJsonElements()));
                 }
             }
 
             return attachments;
         }
 
-        private static Attachment GetAttachment(JObject lgJObj)
+        private static Attachment GetAttachment(Dictionary<string, JsonElement> lgJObj)
         {
             Attachment attachment;
 
@@ -219,7 +229,7 @@ namespace Microsoft.Bot.Builder
             }
             else if (type == "adaptivecard")
             {
-                attachment = new Attachment(AdaptiveCardType, content: lgJObj);
+                attachment = new Attachment { ContentType = AdaptiveCardType, Content = lgJObj };
             }
             else if (type == nameof(Attachment).ToLowerInvariant())
             {
@@ -227,15 +237,15 @@ namespace Microsoft.Bot.Builder
             }
             else
             {
-                attachment = new Attachment(type, content: lgJObj);
+                attachment = new Attachment { ContentType = type, Content = lgJObj };
             }
 
             return attachment;
         }
 
-        private static Attachment GetNormalAttachment(JObject lgJObj)
+        private static Attachment GetNormalAttachment(Dictionary<string, JsonElement> lgJObj)
         {
-            var attachmentJson = new JObject();
+            var attachmentJson = new Dictionary<string, JsonElement>();
 
             foreach (var item in lgJObj)
             {
@@ -246,18 +256,27 @@ namespace Microsoft.Bot.Builder
                 {
                     case "contenttype":
                         {
-                            var type = value.ToString().ToLowerInvariant();
+                            var type = value.GetString().ToLowerInvariant();
                             if (GenericCardTypeMapping.ContainsKey(type))
                             {
-                                attachmentJson["contentType"] = GenericCardTypeMapping[type];
+                                foreach (var element in new { contentType = GenericCardTypeMapping[type] }.ToJsonElements())
+                                {
+                                    attachmentJson[element.Key] = element.Value;
+                                }
                             }
                             else if (type == "adaptivecard")
                             {
-                                attachmentJson["contentType"] = AdaptiveCardType;
+                                foreach (var element in new { contentType = AdaptiveCardType }.ToJsonElements())
+                                {
+                                    attachmentJson[element.Key] = element.Value;
+                                }
                             }
                             else
                             {
-                                attachmentJson["contentType"] = type;
+                                foreach (var element in new { contentType = type }.ToJsonElements())
+                                {
+                                    attachmentJson[element.Key] = element.Value;
+                                }
                             }
 
                             break;
@@ -272,9 +291,9 @@ namespace Microsoft.Bot.Builder
             return attachmentJson.ToObject<Attachment>();
         }
 
-        private static Attachment GetCardAtttachment(string type, JObject lgJObj)
+        private static Attachment GetCardAtttachment(string type, Dictionary<string, JsonElement> lgJObj)
         {
-            var card = new JObject();
+            var card = new Dictionary<string, JsonElement>();
 
             foreach (var item in lgJObj)
             {
@@ -284,7 +303,11 @@ namespace Microsoft.Bot.Builder
                 switch (property)
                 {
                     case "tap":
-                        card[property] = JToken.FromObject(GetCardAction(value));
+                        foreach (var element in new { tap = GetCardAction(value) }.ToJsonElements())
+                        {
+                            card[element.Key] = element.Value;
+                        }
+
                         break;
 
                     case "image":
@@ -292,40 +315,40 @@ namespace Microsoft.Bot.Builder
                         if (type == HeroCard.ContentType || type == ThumbnailCard.ContentType)
                         {
                             // then it's images
-                            if (card["images"] == null)
+                            var images = NormalizedToList(value).Select(NormalizedToMediaOrImage).ToList();
+                            foreach (var element in new { images }.ToJsonElements())
                             {
-                                card["images"] = new JArray();
+                                card[element.Key] = element.Value;
                             }
-
-                            var imageList = NormalizedToList(value).ToList();
-                            imageList.ForEach(u => ((JArray)card["images"]).Add(NormalizedToMediaOrImage(u)));
                         }
                         else
                         {
                             // then it's image
-                            card["image"] = NormalizedToMediaOrImage(value);
+                            var image = NormalizedToMediaOrImage(value);
+                            foreach (var element in new { image }.ToJsonElements())
+                            {
+                                card[element.Key] = element.Value;
+                            }
                         }
 
                         break;
 
                     case "media":
-                        if (card[property] == null)
+                        var media = NormalizedToList(value).Select(NormalizedToMediaOrImage).ToList();
+                        foreach (var element in new { media }.ToJsonElements())
                         {
-                            card[property] = new JArray();
+                            card[element.Key] = element.Value;
                         }
 
-                        var mediaList = NormalizedToList(value).ToList();
-
-                        mediaList.ForEach(u => ((JArray)card[property]).Add(NormalizedToMediaOrImage(u)));
                         break;
 
                     case "buttons":
-                        if (card[property] == null)
+                        var buttons = GetButtons(value).Select(b => b.ToJsonElements()).ToList();
+                        foreach (var element in new { buttons }.ToJsonElements())
                         {
-                            card[property] = new JArray();
+                            card[element.Key] = element.Value;
                         }
 
-                        GetButtons(value).ToList().ForEach(u => ((JArray)card[property]).Add(JObject.FromObject(u)));
                         break;
 
                     case "autostart":
@@ -333,7 +356,10 @@ namespace Microsoft.Bot.Builder
                     case "autoloop":
                         if (IsValidBooleanValue(value, out var result))
                         {
-                            card[property] = result;
+                            foreach (var element in new { result }.ToJsonElements())
+                            {
+                                card[property] = element.Value;
+                            }
                         }
                         else
                         {
@@ -347,70 +373,81 @@ namespace Microsoft.Bot.Builder
                 }
             }
 
-            return new Attachment(type, content: card);
+            return new Attachment { ContentType = type, Content = card };
         }
 
-        private static bool IsValidBooleanValue(JToken value, out bool boolResult)
+        private static bool IsValidBooleanValue(JsonElement value, out bool boolResult)
         {
             boolResult = false;
 
-            if (value is JValue jValue && jValue.Type == JTokenType.Boolean)
+            if (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
             {
-                boolResult = jValue.ToObject<bool>();
+                boolResult = value.GetBoolean();
                 return true;
             }
 
-            if (IsStringValue(value, out var stringValue))
+            if (value.ValueKind == JsonValueKind.String)
             {
-                return bool.TryParse(stringValue, out boolResult);
+                return bool.TryParse(value.GetString(), out boolResult);
             }
 
             return false;
         }
 
-        private static JToken NormalizedToMediaOrImage(JToken item)
+        private static Dictionary<string, JsonElement> NormalizedToMediaOrImage(JsonElement item)
         {
-            return item == null ?
-                new JObject() : IsStringValue(item, out var url) ?
-                new JObject() { { "url", url } } : item;
-        }
-
-        private static IList<JToken> NormalizedToList(JToken item)
-        {
-            return item == null ?
-                new List<JToken>() :
-                item is JArray array ? array.ToList() : new List<JToken>() { item };
-        }
-
-        private static bool IsStringValue(JToken value, out string stringValue)
-        {
-            stringValue = string.Empty;
-            if (value is JValue jValue && jValue.Type == JTokenType.String)
+            if (item.ValueKind == JsonValueKind.Null)
             {
-                stringValue = jValue.ToObject<string>().Trim();
-                return true;
+                return new Dictionary<string, JsonElement>();
             }
-            else
+
+            if (item.ValueKind == JsonValueKind.String)
             {
-                return false;
+                return new { url = item.GetString() }.ToJsonElements();
             }
+
+            return item.ToJsonElements();
         }
 
-        private static string GetStructureType(JObject jObj)
+        private static IList<JsonElement> NormalizedToList(JsonElement item)
+        {
+            var result = new List<JsonElement>();
+
+            if (item.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in item.EnumerateArray())
+                {
+                    result.Add(element);
+                }
+            }
+
+            return result;
+        }
+
+        private static string GetStructureType(Dictionary<string, JsonElement> jObj)
         {
             if (jObj == null)
             {
                 return string.Empty;
             }
 
-            var type = jObj[LGType]?.ToString()?.Trim();
-            if (string.IsNullOrEmpty(type))
+            if (jObj.ContainsKey(LGType))
             {
-                // Adaptive card type
-                type = jObj["type"]?.ToString()?.Trim();
+                var type = jObj[LGType].GetString();
+
+                if (string.IsNullOrWhiteSpace(type))
+                {
+                    if (jObj.ContainsKey("type"))
+                    {
+                        // Adaptive card type
+                        type = jObj["type"].GetString();
+                    }
+                }
+
+                return type?.ToLowerInvariant() ?? string.Empty;
             }
 
-            return type?.ToLowerInvariant() ?? string.Empty;
+            return string.Empty;
         }
     }
 }

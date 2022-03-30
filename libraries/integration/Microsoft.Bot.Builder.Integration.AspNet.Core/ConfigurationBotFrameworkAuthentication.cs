@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Bot.Builder.Skills;
-using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Bot.Schema;
+using Microsoft.Bot.Connector.Client;
+using Microsoft.Bot.Connector.Client.Authentication;
+using Microsoft.Bot.Connector.Client.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Builder.Integration.AspNet.Core
 {
@@ -24,11 +22,9 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         /// Initializes a new instance of the <see cref="ConfigurationBotFrameworkAuthentication"/> class.
         /// </summary>
         /// <param name="configuration">An <see cref="IConfiguration"/> instance.</param>
-        /// <param name="credentialsFactory">An <see cref="ServiceClientCredentialsFactory"/> instance.</param>
+        /// <param name="credential">An <see cref="BotFrameworkCredential"/> instance.</param>
         /// <param name="authConfiguration">An <see cref="AuthenticationConfiguration"/> instance.</param>
-        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/> to use.</param>
-        /// <param name="logger">The ILogger instance to use.</param>
-        public ConfigurationBotFrameworkAuthentication(IConfiguration configuration, ServiceClientCredentialsFactory credentialsFactory = null, AuthenticationConfiguration authConfiguration = null, IHttpClientFactory httpClientFactory = null, ILogger logger = null)
+        public ConfigurationBotFrameworkAuthentication(IConfiguration configuration, BotFrameworkCredential credential = null, AuthenticationConfiguration authConfiguration = null)
         {
             var channelService = configuration.GetSection("ChannelService")?.Value;
             var validateAuthority = configuration.GetSection("ValidateAuthority")?.Value;
@@ -40,6 +36,11 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
             var toBotFromEmulatorOpenIdMetadataUrl = configuration.GetSection("ToBotFromEmulatorOpenIdMetadataUrl")?.Value;
             var callerId = configuration.GetSection("CallerId")?.Value;
 
+            var appType = configuration.GetSection("MicrosoftAppType")?.Value;
+            var tenantId = configuration.GetSection("MicrosoftAppTenantId")?.Value;
+            var appId = configuration.GetSection("MicrosoftAppId")?.Value;
+            var appPassword = configuration.GetSection("MicrosoftAppPassword")?.Value;
+
             _inner = BotFrameworkAuthenticationFactory.Create(
                 channelService,
                 bool.Parse(validateAuthority ?? "true"),
@@ -50,10 +51,8 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                 toBotFromChannelOpenIdMetadataUrl,
                 toBotFromEmulatorOpenIdMetadataUrl,
                 callerId,
-                credentialsFactory ?? new ConfigurationServiceClientCredentialFactory(configuration),
-                authConfiguration ?? new AuthenticationConfiguration(),
-                httpClientFactory,
-                logger);
+                credential ?? new BotFrameworkCredential(appType, tenantId, appId, appPassword),
+                authConfiguration ?? new AuthenticationConfiguration());
         }
 
         /// <inheritdoc />

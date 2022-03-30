@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder.Skills
 {
@@ -60,7 +60,7 @@ namespace Microsoft.Bot.Builder.Skills
             var skillConversationInfo = new Dictionary<string, object>
             {
                 {
-                    skillConversationId, JObject.FromObject(skillConversationReference)
+                    skillConversationId, skillConversationReference.ToJsonElements()
                 }
             };
 
@@ -92,7 +92,7 @@ namespace Microsoft.Bot.Builder.Skills
 
             if (skillConversationInfo.Any())
             {
-                var conversationInfo = ((JObject)skillConversationInfo[skillConversationId]).ToObject<SkillConversationReference>();
+                var conversationInfo = skillConversationInfo[skillConversationId].ToObject<SkillConversationReference>();
                 return conversationInfo;
             }
 

@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Bot.Connector.Client.Models;
 
 namespace Microsoft.Bot.Builder
 {
@@ -92,7 +92,7 @@ namespace Microsoft.Bot.Builder
                 {
                     turnContext.TurnState[_contextServiceKey] = new CachedBotState(asDictionary);
                 }
-                else if (val is JObject asJobject)
+                else if (val is Dictionary<string, JsonElement> asJobject)
                 {
                     // If types are not used by storage serialization, and Newtonsoft is the serializer
                     // the item found will be a JObject.
@@ -189,12 +189,12 @@ namespace Microsoft.Bot.Builder
         /// <param name="turnContext">The context object for this turn.</param>
         /// <returns>A JSON representation of the cached state.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="turnContext"/> is <c>null</c>.</exception>
-        public JToken Get(ITurnContext turnContext)
+        public Dictionary<string, JsonElement> Get(ITurnContext turnContext)
         {
             BotAssert.ContextNotNull(turnContext);
 
             var cachedState = GetCachedState(turnContext);
-            return JObject.FromObject(cachedState.State);
+            return cachedState.State.ToJsonElements();
         }
 
         /// <summary>
@@ -257,18 +257,13 @@ namespace Microsoft.Bot.Builder
 
                 // If types are not used by storage serialization, and Newtonsoft is the serializer,
                 // use Newtonsoft to convert the object to the type expected.
-                if (result is JObject jObj)
+                if (result is Dictionary<string, JsonElement> jObj)
                 {
                     return Task.FromResult(jObj.ToObject<T>());
                 }
 
-                if (result is JArray jarray)
-                {
-                    return Task.FromResult(jarray.ToObject<T>());
-                }
-
                 // attempt to convert result to T using json serializer.
-                return Task.FromResult(JToken.FromObject(result).ToObject<T>());
+                return Task.FromResult(result.ToObject<T>());
             }
 
             if (typeof(T).IsValueType)
@@ -363,7 +358,7 @@ namespace Microsoft.Bot.Builder
 
             internal static string ComputeHash(object obj)
             {
-                return JsonConvert.SerializeObject(obj);
+                return JsonSerializer.Serialize(obj, SerializationConfig.DefaultSerializeOptions);
             }
 
             internal bool IsChanged()
