@@ -439,7 +439,9 @@ namespace Microsoft.Bot.Connector.Client.Authentication
                 _toBotFromEmulatorOpenIdMetadataUrl,
                 AuthenticationConstants.AllowedSigningAlgorithms);
 
-            var identity = await tokenExtractor.GetIdentityAsync(authHeader, channelId, _authConfiguration.RequiredEndorsements.ToArray()).ConfigureAwait(false);
+            var requiredEndorsements = _authConfiguration.RequiredEndorsements ?? Enumerable.Empty<string>();
+
+            var identity = await tokenExtractor.GetIdentityAsync(authHeader, channelId, requiredEndorsements.ToArray()).ConfigureAwait(false);
             if (identity == null)
             {
                 // No valid identity. Not Authorized.
