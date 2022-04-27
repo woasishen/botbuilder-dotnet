@@ -1158,6 +1158,8 @@ namespace Microsoft.Bot.Builder.Teams.Tests
 
         private class TestActivityHandler : TeamsActivityHandler
         {
+            public int NumberOfOnEventCalls { get; set; } = 0;
+
             public List<string> Record { get; } = new List<string>();
 
             // ConversationUpdate
@@ -1387,6 +1389,7 @@ namespace Microsoft.Bot.Builder.Teams.Tests
             protected override Task OnEventActivityAsync(ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
             {
                 Record.Add(MethodBase.GetCurrentMethod().Name);
+                NumberOfOnEventCalls++;
                 return base.OnEventActivityAsync(turnContext, cancellationToken);
             }
 
