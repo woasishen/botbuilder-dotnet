@@ -54,7 +54,7 @@ stages:
     - task: colinsalmcorner.colinsalmcorner-buildtasks.tag-build-task.tagBuildOrRelease@0
       displayName: 'Tag Build with SkipGovernance value'
       inputs:
-        tags: 'SkipGovernance=$(parameters.SkipGovernance)'
+        tags: 'SkipGovernance=${{ parameters.SkipGovernance }}'
       continueOnError: true
 
     - template: ci-build-steps.yml
