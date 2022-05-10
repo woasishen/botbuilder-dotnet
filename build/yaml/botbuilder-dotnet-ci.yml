@@ -62,7 +62,7 @@ stages:
 
     - template: ci-build-steps.yml
       parameters:
-        SkipGovernance: ${{ TF_BUILD }}
+        SkipGovernance: ${{ parameters.SkipGovernance }}
     - template: ci-test-steps.yml
     - ${{ if not(parameters.SkipGovernance) }}:
       - template: ci-component-detection-steps.yml
@@ -74,7 +74,7 @@ stages:
     steps:
     - template: ci-build-steps.yml
       parameters:
-        SkipGovernance: ${{ TF_BUILD }}
+        SkipGovernance: ${{ parameters.SkipGovernance }}
     - template: ci-test-steps.yml
     - ${{ if not(parameters.SkipGovernance) }}:
       - template: ci-component-detection-steps.yml
