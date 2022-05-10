@@ -16,9 +16,9 @@ pr: none # pr trigger is set in ADO
 
 parameters:
   - name: SkipGovernance
-#     displayName: Skip Governance
-#     type: boolean
-#    default: false
+     displayName: Skip Governance
+     type: boolean
+    default: false
 
 variables:
   ApiCompatVersion: 4.6.3
@@ -57,6 +57,7 @@ stages:
       inputs:
         tags: |
           SkipGovernance=${{ parameters.SkipGovernance }}
+          skipComponentGovernanceDetection=${{ variables.skipComponentGovernanceDetection }}
           TF_BUILD=${{ variables.TF_BUILD }}
       continueOnError: true
 
