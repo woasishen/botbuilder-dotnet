@@ -60,10 +60,10 @@ stages:
           SkipGovernance=${{ parameters.SkipGovernance }}
           skipComponentGovernanceDetection=${{ variables.skipComponentGovernanceDetection }}
           TF_BUILD=${{ variables.TF_BUILD }}
-        # System.CollectionUri=${{ System.CollectionUri }}
-        # System.TeamFoundationCollectionUri=${{ System.TeamFoundationCollectionUri }}
-        # System.TeamProject=${{ System.TeamProject }}
-        # System.TeamProjectId=${{ System.TeamProjectId }}
+          System.CollectionUri=${{ variables.System.CollectionUri }}
+          System.TeamFoundationCollectionUri=${{ variables.System.TeamFoundationCollectionUri }}
+          System.TeamProject=${{ variables.System.TeamProject }}
+          System.TeamProjectId=${{ variables.System.TeamProjectId }}
 
       continueOnError: true
 
