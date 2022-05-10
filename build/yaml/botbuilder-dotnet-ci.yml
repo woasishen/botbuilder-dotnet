@@ -14,8 +14,8 @@ pool:
 trigger: none # ci trigger is set in ADO
 pr: none # pr trigger is set in ADO
 
-#parameters:
-#  - name: SkipGovernance
+parameters:
+  - name: SkipGovernance
 #     displayName: Skip Governance
 #     type: boolean
 #    default: false
