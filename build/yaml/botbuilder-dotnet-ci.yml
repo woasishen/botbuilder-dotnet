@@ -16,8 +16,8 @@ pr: none # pr trigger is set in ADO
 
 parameters:
   - name: SkipGovernance
-     displayName: Skip Governance
-     type: boolean
+    displayName: Skip Governance
+    type: boolean
     default: false
 
 variables:
