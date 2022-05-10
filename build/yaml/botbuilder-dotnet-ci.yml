@@ -57,7 +57,7 @@ stages:
       inputs:
         tags: |
           SkipGovernance=${{ parameters.SkipGovernance }}
-          TF_BUILD=${{ $(TF.BUILD) }}
+          TF_BUILD=${{ variables.TF.BUILD }}
       continueOnError: true
 
     - template: ci-build-steps.yml
