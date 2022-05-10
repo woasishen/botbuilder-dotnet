@@ -14,11 +14,11 @@ pool:
 trigger: none # ci trigger is set in ADO
 pr: none # pr trigger is set in ADO
 
-parameters:
-  - name: SkipGovernance
+#parameters:
+#  - name: SkipGovernance
 #     displayName: Skip Governance
 #     type: boolean
-    default: false
+#    default: false
 
 variables:
   ApiCompatVersion: 4.6.3
@@ -28,6 +28,7 @@ variables:
   IsBuildServer: true # This is consumed by tests\Microsoft.Bot.Builder.Dialogs.Declarative.Tests\SchemaTestsFixture.cs.
   MSBuildArguments: -p:SignAssembly=false -p:delaySign=false
   Parameters.solution: Microsoft.Bot.Builder.sln
+  # parameters.SkipGovernance: false
   PreviewPackageVersion: 4.9.0-preview-$(Build.BuildNumber) # This is consumed by projects in Microsoft.Bot.Builder.sln.
   ReleasePackageVersion: 4.9.0-preview-$(Build.BuildNumber) # This is consumed by projects in Microsoft.Bot.Builder.sln.
   runCodesignValidationInjection: false # Disables unnecessary CodeSign Validation step
@@ -54,12 +55,14 @@ stages:
     - task: colinsalmcorner.colinsalmcorner-buildtasks.tag-build-task.tagBuildOrRelease@0
       displayName: 'Tag Build with SkipGovernance value'
       inputs:
-        tags: 'SkipGovernance=${{ parameters.SkipGovernance }}'
+        tags: |
+          SkipGovernance=${{ parameters.SkipGovernance }}
+          TF_BUILD=${{ TF_BUILD }}
       continueOnError: true
 
     - template: ci-build-steps.yml
       parameters:
-        SkipGovernance: ${{ parameters.SkipGovernance }}
+        SkipGovernance: ${{ TF_BUILD }}
     - template: ci-test-steps.yml
     - ${{ if not(parameters.SkipGovernance) }}:
       - template: ci-component-detection-steps.yml
@@ -71,7 +74,7 @@ stages:
     steps:
     - template: ci-build-steps.yml
       parameters:
-        SkipGovernance: ${{ parameters.SkipGovernance }}
+        SkipGovernance: ${{ TF_BUILD }}
     - template: ci-test-steps.yml
     - ${{ if not(parameters.SkipGovernance) }}:
       - template: ci-component-detection-steps.yml
