@@ -88,82 +88,97 @@ steps:
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    cd ..
    ls -R
   displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes) copy copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: 'ls .. -R'
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      'ls .. -R'
   displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: 'dir ..'
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      'dir ..'
   displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: 'dir ../'
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      'dir ../'
   displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    cd ..
    ls -l -s -h -R
   displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks) copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    cd ..
    ls -s -h -R
   displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times) copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    cd ..
    dir -s
   displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    Set-Location ..
    Get-ChildItem -Recurse -Force
   displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- powershell: 'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
   ignoreLASTEXITCODE: true
   displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
 
-- script: 'dir .. /s'
-  displayName: 'Dir workspace 3 (windows) - works in 1: win, not ubuntu, not macos copy'
-  continueOnError: true
-  condition: succeededOrFailed()
-
-- script: |
-   cd ..
-   ls -R
-  displayName: 'Dir workspace 4 (ubuntu, mac) - works in 3: win (no sizes), ubuntu (no sizes), macos (no sizes), copy'
-  continueOnError: true
-  condition: succeededOrFailed()
-
-- script: |
-   cd ..
-   tree -a -f -s -i -D
-  displayName: 'Dir workspace 5 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos copy'
-  continueOnError: true
-  condition: succeededOrFailed()
-
-- powershell: |
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
    cd ..
    tree -a -f -s -i -D
   displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos copy'
