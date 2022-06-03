@@ -1,42 +1,171 @@
 pool:
-  vmImage: $[ coalesce( variables['VMImage'], 'windows-2019' ) ] # or 'windows-latest' or 'vs2017-win2016'
+  name: Azure Pipelines
+steps:
+- powershell: |
+   cd ..
+   ls -R
+  displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes)'
+  continueOnError: true
+  condition: succeededOrFailed()
 
-variables:
-  runCodesignValidationInjection: false # Disables unnecessary CodeSign Validation step
-  skipComponentGovernanceDetection: true # Disables unnecessary Component Governanace Detection step 
-  TriggeredReason: $[ coalesce( variables['TriggeringBuildReason'], variables['Build.Reason'] ) ]
-  # NextBuild: define in Azure '[experimental]Dummy-build2'
-  # PipelinesPersonalAccessToken: define in Azure 
-  # TriggeredBy: define in Azure set to an empty string
+- powershell: 'ls .. -R'
+  displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
 
-stages:
-- stage: Stage
-  jobs:
-    - job: Job
+- powershell: 'dir ..'
+  displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
 
-      steps:
-      - task: colinsalmcorner.colinsalmcorner-buildtasks.tag-build-task.tagBuildOrRelease@0
-        displayName: 'Tag Build with Build.Reason=$(Build.Reason) NextBuild=$(NextBuild)'
-        inputs:
-          tags: |
-            TriggeredReason=$(TriggeredReason)
-            $(TriggeredBy)
-            NextBuild=$(NextBuild)
-        continueOnError: true
-        condition: always()
+- powershell: 'dir ../'
+  displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
 
-      - script: 'echo "did this run?"'
-        displayName: 'Pretend Deploy'
-        condition: and(succeeded(), in(variables['TriggeredReason'], 'Schedule', 'Manual'))
+- powershell: |
+   cd ..
+   ls -l -s -h -R
+  displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks)'
+  continueOnError: true
+  condition: succeededOrFailed()
 
-      - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@3
-        displayName: 'Trigger build $(NextBuild)'
-        inputs:
-          buildDefinition: '$(NextBuild)'
-          queueBuildForUserThatTriggeredBuild: true
-          buildParameters: 'TriggeringBuildReason: $(TriggeredReason), TriggeredBy: Triggered_by_$(Build.DefinitionName)/$(Build.BuildNumber)'
-          password: '$(ExecutePipelinesPersonalAccessToken)'
-          enableBuildInQueueCondition: true
-          blockingBuildsList: '$(NextBuild)'
-        continueOnError: true
-        condition: and(succeededOrFailed(), ne(variables['TriggeredReason'], 'Manual'), ne(variables['NextBuild'], ''), ne(variables['ExecutePipelinesPersonalAccessToken'], ''))
+- powershell: |
+   cd ..
+   ls -s -h -R
+  displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times)'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   dir -s
+  displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   Set-Location ..
+   Get-ChildItem -Recurse -Force
+  displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: 'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
+  ignoreLASTEXITCODE: true
+  displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: 'dir .. /s'
+  displayName: 'Dir workspace 3 (windows) - works in 1: win, not ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: |
+   cd ..
+   ls -R
+  displayName: 'Dir workspace 4 (ubuntu, mac) - works in 3: win (no sizes), ubuntu (no sizes), macos (no sizes),'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: |
+   cd ..
+   tree -a -f -s -i -D
+  displayName: 'Dir workspace 5 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   tree -a -f -s -i -D
+  displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: '''Using "- task: powershell@2" after this point'''
+  displayName: '==== Using "- task: powershell@2" after this point ===='
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   ls -R
+  displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes) copy copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: 'ls .. -R'
+  displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: 'dir ..'
+  displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: 'dir ../'
+  displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   ls -l -s -h -R
+  displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks) copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   ls -s -h -R
+  displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times) copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   dir -s
+  displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   Set-Location ..
+   Get-ChildItem -Recurse -Force
+  displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: 'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
+  ignoreLASTEXITCODE: true
+  displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: 'dir .. /s'
+  displayName: 'Dir workspace 3 (windows) - works in 1: win, not ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: |
+   cd ..
+   ls -R
+  displayName: 'Dir workspace 4 (ubuntu, mac) - works in 3: win (no sizes), ubuntu (no sizes), macos (no sizes), copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- script: |
+   cd ..
+   tree -a -f -s -i -D
+  displayName: 'Dir workspace 5 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- powershell: |
+   cd ..
+   tree -a -f -s -i -D
+  displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos copy'
+  continueOnError: true
+  condition: succeededOrFailed()
