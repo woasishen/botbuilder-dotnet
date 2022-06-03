@@ -129,8 +129,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   cd ..
-   ls -l -s -h -R
+      cd ..
+      ls -l -s -h -R
   displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks) copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -139,8 +139,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   cd ..
-   ls -s -h -R
+      cd ..
+      ls -s -h -R
   displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times) copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -149,8 +149,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   cd ..
-   dir -s
+      cd ..
+      dir -s
   displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -159,8 +159,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   Set-Location ..
-   Get-ChildItem -Recurse -Force
+      Set-Location ..
+      Get-ChildItem -Recurse -Force
   displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -179,8 +179,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   cd ..
-   tree -a -f -s -i -D
+      cd ..
+      tree -a -f -s -i -D
   displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
