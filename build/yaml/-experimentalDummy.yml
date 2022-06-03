@@ -170,7 +170,7 @@ steps:
     targetType: inline
     script: |
       'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
-  ignoreLASTEXITCODE: true
+    ignoreLASTEXITCODE: true
   displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
