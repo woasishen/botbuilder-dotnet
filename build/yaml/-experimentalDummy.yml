@@ -92,8 +92,8 @@ steps:
   inputs:
     targetType: inline
     script: |
-   cd ..
-   ls -R
+      cd ..
+      ls -R
   displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes) copy copy'
   continueOnError: true
   condition: succeededOrFailed()
