@@ -103,7 +103,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      'ls .. -R'
+      ls .. -R
   displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -112,7 +112,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      'dir ..'
+      dir ..
   displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -121,7 +121,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      'dir ../'
+      dir ../
   displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos copy'
   continueOnError: true
   condition: succeededOrFailed()
@@ -170,7 +170,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
+      Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}
     ignoreLASTEXITCODE: true
   displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos copy'
   continueOnError: true
