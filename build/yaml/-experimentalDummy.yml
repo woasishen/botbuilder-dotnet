@@ -1,5 +1,6 @@
 pool:
-  name: Azure Pipelines
+  vmImage: windows-latest #ubuntu-latest #macOS-latest
+
 steps:
 - powershell: |
    cd ..
