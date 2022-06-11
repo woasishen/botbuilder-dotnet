@@ -1,5 +1,5 @@
 pool:
-  vmImage: ubuntu-latest #macOS-latest #windows-latest #
+  vmImage: macOS-latest #windows-latest #ubuntu-latest #
 
 steps:
 - powershell: |
