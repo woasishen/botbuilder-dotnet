@@ -2,47 +2,27 @@ pool:
   vmImage: windows-latest #ubuntu-latest #macOS-latest #
 
 steps:
-- powershell:
-  displayName: 'Test compress archive. powershell signature'
-  inputs:
-    targetType: filePath
-    filePath: ./build/ExtractCompressNuGet.ps1
-    arguments: '$(Build.ArtifactStagingDirectory) -Compress'
-  enabled: true
-
-- task: PowerShell@2
-  displayName: 'Test compress archive. PowerShell@2 signature'
-  inputs:
-    targetType: filePath
-    filePath: ./build/ExtractCompressNuGet.ps1
-    arguments: '$(Build.ArtifactStagingDirectory) -Compress'
-  enabled: true
-
 - powershell: |
    cd ..
    ls -R
   displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: 'ls .. -R'
   displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: 'dir ..'
   displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: 'dir ../'
   displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: |
    cd ..
@@ -50,7 +30,6 @@ steps:
   displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: |
    cd ..
@@ -58,7 +37,6 @@ steps:
   displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: |
    cd ..
@@ -66,7 +44,6 @@ steps:
   displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: |
    Set-Location ..
@@ -74,14 +51,12 @@ steps:
   displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: 'Get-ChildItem .. -ErrorAction Continue -Recurse -Force | Where {$_.FullName -notlike "*node_modules*"}'
   ignoreLASTEXITCODE: true
   displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: |
    cd ..
@@ -89,13 +64,11 @@ steps:
   displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - powershell: '''Using "- task: powershell@2" after this point'''
   displayName: '==== Using "- task: powershell@2" after this point ===='
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -106,7 +79,6 @@ steps:
   displayName: 'Dir workspace 0 - works in 3: win, ubuntu (no sizes), macos (no sizes)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -116,7 +88,6 @@ steps:
   displayName: 'Dir workspace 0.1 - works in 2: win, ubuntu (no sizes), not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -126,7 +97,6 @@ steps:
   displayName: 'Dir workspace 0.2 - works in 0: not win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -136,7 +106,6 @@ steps:
   displayName: 'Dir workspace 0.3 - works in 0: not win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -147,7 +116,6 @@ steps:
   displayName: 'Dir workspace 0.4 - works in 2: not win, ubuntu, macos (sizes in blocks)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -158,7 +126,6 @@ steps:
   displayName: 'Dir workspace 0.5 - works in 2: not win, ubuntu (no times), macos (sizes in blocks, no times)'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -169,7 +136,6 @@ steps:
   displayName: 'Dir workspace 0.6 - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -180,7 +146,6 @@ steps:
   displayName: 'Dir workspace 1 - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -191,7 +156,6 @@ steps:
   displayName: 'Dir workspace 2 except node_modules - works in 1: win, not ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
 
 - task: PowerShell@2
   inputs:
@@ -202,4 +166,3 @@ steps:
   displayName: 'Dir workspace 6 - ubuntu OS only - best - works in 1: not win, ubuntu, not macos'
   continueOnError: true
   condition: succeededOrFailed()
-  enabled: false
