@@ -8,6 +8,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Streaming;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Bot.Builder
@@ -49,18 +51,22 @@ namespace Microsoft.Bot.Builder
         /// <seealso cref="ActivityTypes"/>
         public virtual async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
+            LogCfy.Log($"ActivityHandler.OnTurnAsync:{turnContext.Activity.Type}");
             if (turnContext == null)
             {
+                LogCfy.Log($"ActivityHandler.OnTurnAsyncErr1");
                 throw new ArgumentNullException(nameof(turnContext));
             }
 
             if (turnContext.Activity == null)
             {
+                LogCfy.Log($"ActivityHandler.OnTurnAsyncErr2");
                 throw new ArgumentException($"{nameof(turnContext)} must have non-null Activity.");
             }
 
             if (turnContext.Activity.Type == null)
             {
+                LogCfy.Log($"ActivityHandler.OnTurnAsyncErr3");
                 throw new ArgumentException($"{nameof(turnContext)}.Activity must have non-null Type.");
             }
 
@@ -179,8 +185,12 @@ namespace Microsoft.Bot.Builder
         /// <seealso cref="OnMembersRemovedAsync(IList{ChannelAccount}, ITurnContext{IConversationUpdateActivity}, CancellationToken)"/>
         protected virtual Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
         {
+            LogCfy.Log($"turnContext.Activity.MembersAdded:{turnContext.Activity.MembersAdded}");
             if (turnContext.Activity.MembersAdded != null)
             {
+                LogCfy.Log($"turnContext.Activity.MembersAdded:\r\n" +
+                    $"{JsonConvert.SerializeObject(turnContext.Activity.MembersAdded)}\r\n" +
+                    $"type:{this.GetType()}");
                 if (turnContext.Activity.MembersAdded.Any(m => m.Id != turnContext.Activity.Recipient?.Id))
                 {
                     return OnMembersAddedAsync(turnContext.Activity.MembersAdded, turnContext, cancellationToken);

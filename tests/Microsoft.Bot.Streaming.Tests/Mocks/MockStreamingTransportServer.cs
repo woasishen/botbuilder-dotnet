@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +13,14 @@ namespace Microsoft.Bot.Streaming.UnitTests.Mocks
     {
         public event DisconnectedEventHandler Disconnected;
 
+        public event Action Connected;
+
         public Dictionary<StreamingRequest, ReceiveResponse> Messages { get; set; } = new Dictionary<StreamingRequest, ReceiveResponse>();
 
         public void Disconnect()
         {
             Disconnected?.Invoke(this, DisconnectedEventArgs.Empty);
+            Connected?.Invoke();
         }
 
         public Task<ReceiveResponse> SendAsync(StreamingRequest request, CancellationToken cancellationToken = default(CancellationToken))

@@ -55,6 +55,8 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
         /// </summary>
         public event DisconnectedEventHandler Disconnected;
 
+        public event Action Connected;
+
         /// <summary>
         /// Gets a value indicating whether or not this server is currently connected.
         /// </summary>

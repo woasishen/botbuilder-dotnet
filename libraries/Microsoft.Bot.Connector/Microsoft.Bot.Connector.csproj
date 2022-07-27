@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Bot.Schema\Microsoft.Bot.Schema.csproj" />
+    <ProjectReference Include="..\Microsoft.Bot.Streaming\Microsoft.Bot.Streaming.csproj" />
   </ItemGroup>
 
 </Project>

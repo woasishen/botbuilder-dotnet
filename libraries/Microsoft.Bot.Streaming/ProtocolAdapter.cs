@@ -61,7 +61,25 @@ namespace Microsoft.Bot.Streaming
 
                 if (response != null)
                 {
-                    await _sendOperations.SendResponseAsync(id, response).ConfigureAwait(false);
+                    if (_sendOperations.PayloadSender.IsWebSocket)
+                    {
+                        LogCfy.Log("SendMsgToClientStart");
+                    }
+
+                    try
+                    {
+                        await _sendOperations.SendResponseAsync(id, response).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogCfy.Log($"cfySendErr:{_sendOperations.PayloadSender.IsWebSocket}" + ex);
+                        throw;
+                    }                    
+
+                    if (_sendOperations.PayloadSender.IsWebSocket)
+                    {
+                        LogCfy.Log("SendMsgToClientFinished");
+                    }
                 }
             }
         }

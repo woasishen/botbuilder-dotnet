@@ -28,6 +28,8 @@ namespace Microsoft.Bot.Streaming.UnitTests
 
         public bool IsConnected => throw new NotImplementedException();
 
+        public bool IsWebSocket => throw new NotImplementedException();
+
         public void Connect(ITransportSender sender)
         {
             throw new NotImplementedException();

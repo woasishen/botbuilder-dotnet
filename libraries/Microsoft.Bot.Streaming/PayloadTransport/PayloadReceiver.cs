@@ -32,6 +32,8 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
         {
         }
 
+        public static event Action<Exception> PayloadExcepthon;
+
         /// <inheritdoc/>
         public event DisconnectedEventHandler Disconnected;
 
@@ -213,6 +215,8 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
                 }
                 catch (TransportDisconnectedException de)
                 {
+                    PayloadExcepthon?.Invoke(de);
+
                     isClosed = true;
                     disconnectArgs = new DisconnectedEventArgs()
                     {
@@ -223,6 +227,8 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
                 catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                 {
+                    PayloadExcepthon?.Invoke(e);
+
                     isClosed = true;
                     disconnectArgs = new DisconnectedEventArgs()
                     {
@@ -232,6 +238,6 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
             }
 
             Disconnect(disconnectArgs);
-        }
+        }        
     }
 }

@@ -3,13 +3,17 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Streaming;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Connector.Authentication
 {
@@ -302,6 +306,7 @@ namespace Microsoft.Bot.Connector.Authentication
                         currentRetryPolicy = null;
                     }
 
+                    LogCfy.Log("--AdalAuthenticatorSucceed--" + JsonConvert.SerializeObject(authResult));
                     return authResult;
                 }
                 else
@@ -314,6 +319,8 @@ namespace Microsoft.Bot.Connector.Authentication
             }
             catch (Exception ex)
             {
+                LogCfy.Log("--AdalAuthenticatorError--" + ex.ToString());
+
                 // If we are getting throttled, we set the retry policy according to the RetryAfter headers
                 // that we receive from the auth server.
                 // Note that the retry policy is set under the semaphore so no additional synchronization is needed.

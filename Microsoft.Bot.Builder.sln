@@ -225,6 +225,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Bot.Builder.Dialo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Bot.Builder.Dialogs.Adaptive.Runtime", "libraries\Microsoft.Bot.Builder.Dialogs.Adaptive.Runtime\Microsoft.Bot.Builder.Dialogs.Adaptive.Runtime.csproj", "{2DB4E5B0-3209-425E-A912-005A330CC66A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthenticationBot", "..\BotBuilder-Samples\samples\csharp_dotnetcore\18.bot-authentication\AuthenticationBot.csproj", "{A59BB944-4175-4FF6-A586-987096FB4569}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DirectLineFlex", "..\IntercomSamples\Microsoft.DirectLineFlex\Microsoft.DirectLineFlex\Microsoft.DirectLineFlex.csproj", "{C825DBB3-8ED0-4287-B592-173EE84BC1F0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoBot", "..\BotBuilder-Samples\samples\csharp_dotnetcore\02.echo-bot\EchoBot.csproj", "{98DBF812-6249-4D2A-9043-80B9AEA34885}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotAuthenticationMSGraph", "..\BotBuilder-Samples\samples\csharp_dotnetcore\24.bot-authentication-msgraph\BotAuthenticationMSGraph.csproj", "{7FDE7378-43AE-434C-A64D-CFB438E525A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -881,6 +889,38 @@ Global
 		{2DB4E5B0-3209-425E-A912-005A330CC66A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2DB4E5B0-3209-425E-A912-005A330CC66A}.Release-Windows|Any CPU.ActiveCfg = Release|Any CPU
 		{2DB4E5B0-3209-425E-A912-005A330CC66A}.Release-Windows|Any CPU.Build.0 = Release|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Debug-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Debug-Windows|Any CPU.Build.0 = Debug|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Release-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{A59BB944-4175-4FF6-A586-987096FB4569}.Release-Windows|Any CPU.Build.0 = Release|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Debug-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Debug-Windows|Any CPU.Build.0 = Debug|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Release-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{C825DBB3-8ED0-4287-B592-173EE84BC1F0}.Release-Windows|Any CPU.Build.0 = Release|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Debug-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Debug-Windows|Any CPU.Build.0 = Debug|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Release-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{98DBF812-6249-4D2A-9043-80B9AEA34885}.Release-Windows|Any CPU.Build.0 = Release|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Debug-Windows|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Debug-Windows|Any CPU.Build.0 = Debug|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Release-Windows|Any CPU.ActiveCfg = Release|Any CPU
+		{7FDE7378-43AE-434C-A64D-CFB438E525A8}.Release-Windows|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

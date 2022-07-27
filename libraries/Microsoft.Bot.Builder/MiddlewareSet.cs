@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Streaming;
 
 namespace Microsoft.Bot.Builder
 {
@@ -71,6 +72,10 @@ namespace Microsoft.Bot.Builder
 
         private Task ReceiveActivityInternalAsync(ITurnContext turnContext, BotCallbackHandler callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
         {
+            LogCfy.Log($"ReceiveActivityInternalAsync:\r\n" +
+                $"MiddlewareCount:{_middleware.Count}\r\n" +
+                $"nextMiddlewareIndex:{nextMiddlewareIndex}");
+
             // Check if we're at the end of the middleware list yet
             if (nextMiddlewareIndex == _middleware.Count)
             {

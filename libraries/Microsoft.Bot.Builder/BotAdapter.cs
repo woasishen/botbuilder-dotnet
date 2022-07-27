@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Streaming;
 
 namespace Microsoft.Bot.Builder
 {
@@ -334,10 +335,12 @@ namespace Microsoft.Bot.Builder
 
                 try
                 {
+                    LogCfy.Log("MiddlewareSet.ReceiveActivityWithStatusAsync");
                     await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
+                    LogCfy.Log("RunPipelineAsync MiddlewareSet:\r\n" + e);
                     if (OnTurnError != null)
                     {
                         await OnTurnError.Invoke(turnContext, e).ConfigureAwait(false);

@@ -17,6 +17,15 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
     /// </summary>
     public class NamedPipeClient : IStreamingTransportClient
     {
+        private static readonly List<NamedPipeClient> _namedPipeClients
+            = new List<NamedPipeClient>();
+
+        private static readonly List<NamedPipeClient> _finishedNamedPipeClients
+            = new List<NamedPipeClient>();
+
+        private static readonly List<NamedPipeClient> _finishedNamedPipeClients2
+            = new List<NamedPipeClient>();
+
         private readonly string _baseName;
         private readonly RequestHandler _requestHandler;
         private readonly IPayloadSender _sender;
@@ -65,6 +74,14 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// </summary>
         public event DisconnectedEventHandler Disconnected;
 
+        public static List<Tuple<int, Task>> ConnectTask { get; } = new List<Tuple<int, Task>>();
+
+        private NamedPipeTransport[] Transports { get; } = new NamedPipeTransport[2];
+
+#pragma warning disable SA1202 // Elements should be ordered by access
+        public NamedPipeClientStream NamedPipeClientStream { get; private set; }
+#pragma warning restore SA1202 // Elements should be ordered by access
+
         /// <summary>
         /// Gets a value indicating whether or not this client is currently connected.
         /// </summary>
@@ -74,7 +91,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// <value>
         /// A boolean value indicating whether or not this client is currently connected.
         /// </value>
-        public bool IsConnected => IncomingConnected && OutgoingConnected;
+        public bool IsConnected => ReceiverConnected && SenderConnected;
 
         /// <summary>
         /// Gets a value indicating whether the NamedPipeClient has an incoming pipe connection.
@@ -82,7 +99,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// <value>
         /// A boolean value indicating whether or not this client is currently connected to an incoming pipe.
         /// </value>
-        public bool IncomingConnected => _receiver.IsConnected;
+        public bool ReceiverConnected => _receiver.IsConnected;
 
         /// <summary>
         /// Gets a value indicating whether the NamedPipeClient has an outgoing pipe connection.
@@ -90,7 +107,43 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// <value>
         /// A boolean value indicating whether or not this client is currently connected to an outgoing pipe.
         /// </value>
-        public bool OutgoingConnected => _receiver.IsConnected;
+        public bool SenderConnected => _sender.IsConnected;
+
+        /// <summary>
+        /// 1.
+        /// </summary>
+#pragma warning disable SA1609 // Property documentation should have value
+#pragma warning disable SA1623 // Property summary documentation should match accessors
+        public List<string> StackTrack { get; } = new List<string>();
+#pragma warning restore SA1623 // Property summary documentation should match accessors
+#pragma warning restore SA1609 // Property documentation should have value
+
+        /// <summary>
+        /// GetClients.
+        /// </summary>
+        /// <returns>Clients.</returns>
+        public static List<NamedPipeClient> GetClients()
+        {
+            return _namedPipeClients;
+        }
+
+        /// <summary>
+        /// GetClients.
+        /// </summary>
+        /// <returns>Clients.</returns>
+        public static List<NamedPipeClient> GetFinishedClients()
+        {
+            return _finishedNamedPipeClients;
+        }
+
+        /// <summary>
+        /// GetClients.
+        /// </summary>
+        /// <returns>Clients.</returns>
+        public static List<NamedPipeClient> GetFinishedClients2()
+        {
+            return _finishedNamedPipeClients2;
+        }
 
         /// <summary>
         /// Establish a connection with no custom headers.
@@ -107,20 +160,31 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// <returns>A <see cref="Task"/> that will not resolve until the client stops listening for incoming messages.</returns>
         public async Task ConnectAsync(IDictionary<string, string> requestHeaders)
         {
-            var outgoingPipeName = _baseName + NamedPipeTransport.ServerIncomingPath;
-            var outgoing = new NamedPipeClientStream(".", outgoingPipeName, PipeDirection.Out, PipeOptions.WriteThrough | PipeOptions.Asynchronous);
-            await outgoing.ConnectAsync().ConfigureAwait(false);
+            _namedPipeClients.Add(this);
+            NamedPipeClientStream outgoing = null;
+            while (true)
+            {
+                try
+                {
+                    outgoing = new NamedPipeClientStream(".", _baseName, PipeDirection.InOut, PipeOptions.WriteThrough | PipeOptions.Asynchronous);
+                    await outgoing.ConnectAsync().ConfigureAwait(false);
+                    break;
+                }
+                catch
+                {
+                }
+            }
 
-            var incomingPipeName = _baseName + NamedPipeTransport.ServerOutgoingPath;
-            var incoming = new NamedPipeClientStream(".", incomingPipeName, PipeDirection.In, PipeOptions.WriteThrough | PipeOptions.Asynchronous);
-            await incoming.ConnectAsync().ConfigureAwait(false);
+            _finishedNamedPipeClients.Add(this);
+
+            _finishedNamedPipeClients2.Add(this);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
             // We don't dispose the websocket, since NamedPipeTransport is now
             // the owner of the web socket.
             _sender.Connect(new NamedPipeTransport(outgoing));
-            _receiver.Connect(new NamedPipeTransport(incoming));
+            _receiver.Connect(new NamedPipeTransport(outgoing));
 
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }
