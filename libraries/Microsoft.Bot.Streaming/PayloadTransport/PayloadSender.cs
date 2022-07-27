@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Streaming.Payloads;
 using Microsoft.Bot.Streaming.Transport;
+using Microsoft.Bot.Streaming.Transport.WebSockets;
 using Microsoft.Bot.Streaming.Utilities;
 
 namespace Microsoft.Bot.Streaming.PayloadTransport
@@ -37,6 +38,8 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
 
         /// <inheritdoc/>
         public event DisconnectedEventHandler Disconnected;
+
+        public bool IsWebSocket => _sender is WebSocketTransport;
 
         /// <inheritdoc/>
         public bool IsConnected => _sender != null;

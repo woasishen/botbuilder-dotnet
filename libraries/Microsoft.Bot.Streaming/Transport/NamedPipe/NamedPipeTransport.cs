@@ -37,12 +37,16 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
             _stream = stream;
         }
 
+        public static event Action<string> NamePipeTransportDisconnected;
+
         /// <inheritdoc/>
         public bool IsConnected => _stream.IsConnected;
 
         /// <inheritdoc/>
         public void Close()
         {
+            NamePipeTransportDisconnected?.Invoke("Close");
+
             _stream.Close();
         }
 
@@ -51,6 +55,8 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// </summary>
         public void Dispose()
         {
+            NamePipeTransportDisconnected?.Invoke("Dispose");
+
             Dispose(true);
             GC.SuppressFinalize(this);
         }

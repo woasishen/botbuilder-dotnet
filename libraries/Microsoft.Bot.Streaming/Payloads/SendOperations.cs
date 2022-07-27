@@ -27,6 +27,8 @@ namespace Microsoft.Bot.Streaming.Payloads
             _payloadSender = payloadSender;
         }
 
+        public IPayloadSender PayloadSender => _payloadSender;
+
         /// <summary>
         /// The send operation used to send a <see cref="StreamingRequest"/>.
         /// </summary>

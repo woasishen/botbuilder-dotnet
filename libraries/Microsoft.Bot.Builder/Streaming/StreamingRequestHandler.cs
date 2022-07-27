@@ -139,6 +139,7 @@ namespace Microsoft.Bot.Builder.Streaming
             _server = new NamedPipeServer(pipeName, this);
             _serverIsConnected = true;
             _server.Disconnected += ServerDisconnected;
+            _server.Connected += ServerConnected;
         }
 
         /// <summary>
@@ -233,6 +234,9 @@ namespace Microsoft.Bot.Builder.Streaming
             try
             {
                 body = await request.ReadBodyAsStringAsync().ConfigureAwait(false);
+                LogCfy.Log($"ProcessRequestAsync\r\n" +
+                    $"RequestPath:{request.Path}" +
+                    $"Body:{body}");
             }
 #pragma warning disable CA1031 // Do not catch general exception types (we log the exception and continue execution)
             catch (Exception ex)
@@ -344,6 +348,8 @@ namespace Microsoft.Bot.Builder.Streaming
 
                 activity.CallerId = callerId;
 
+                LogCfy.Log("ProcessStreamingActivityAsync");
+
                 // Now that the request has been converted into an activity we can send it to the adapter.
                 var adapterResponse = await _activityProcessor.ProcessStreamingActivityAsync(activity, _bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
 
@@ -367,7 +373,7 @@ namespace Microsoft.Bot.Builder.Streaming
             {
                 response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 response.SetBody(ex.ToString());
-                _logger.LogError(ex.ToString());
+                LogCfy.Log(ex.ToString());
             }
 
             return response;
@@ -405,7 +411,8 @@ namespace Microsoft.Bot.Builder.Streaming
 
             if (!_serverIsConnected)
             {
-                throw new InvalidOperationException("Error while attempting to send: Streaming transport is disconnected.");
+                LogCfy.Log("Error while attempting to send: Streaming transport is disconnected.");
+                throw new Exception();
             }
 
             // Attempt to send the request. If send fails, we let the original exception get thrown so that the 
@@ -419,7 +426,8 @@ namespace Microsoft.Bot.Builder.Streaming
             }
             else
             {
-                throw new Exception($"Failed to send request through streaming transport. Status code: {serverResponse.StatusCode}.");
+                LogCfy.Log($"Failed to send request through streaming transport. Status code: {serverResponse.StatusCode}.");
+                throw new Exception();
             }
         }
 
@@ -433,9 +441,10 @@ namespace Microsoft.Bot.Builder.Streaming
         {
             if (!_serverIsConnected)
             {
-                throw new InvalidOperationException("Error while attempting to send: Streaming transport is disconnected.");
+                LogCfy.Log("Error while attempting to send: Streaming transport is disconnected.");
+                throw new Exception();
             }
-
+ 
             return _server.SendAsync(request, cancellationToken);
         }
 
@@ -450,6 +459,17 @@ namespace Microsoft.Bot.Builder.Streaming
 
             // remove ourselves from the global collection
             _requestHandlers.TryRemove(_instanceId, out var _);
+        }
+
+        /// <summary>
+        /// a.
+        /// </summary>
+        protected virtual void ServerConnected()
+        {
+            _serverIsConnected = true;
+
+            // remove ourselves from the global collection
+            _requestHandlers.TryAdd(_instanceId, this);
         }
 
         /// <summary>

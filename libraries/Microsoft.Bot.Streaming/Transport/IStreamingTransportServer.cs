@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,8 @@ namespace Microsoft.Bot.Streaming.Transport
         /// An event used to signal when the underlying connection has disconnected.
         /// </summary>
         event DisconnectedEventHandler Disconnected;
+
+        event Action Connected;
 
         /// <summary>
         /// Used to establish the connection used by this server and begin listening for incoming messages.

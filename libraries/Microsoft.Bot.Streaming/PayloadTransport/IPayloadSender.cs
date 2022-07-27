@@ -19,6 +19,8 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
         /// </summary>
         event DisconnectedEventHandler Disconnected;
 
+        bool IsWebSocket { get; }
+
         /// <summary>
         /// Gets a value indicating whether the PayloadSender is currently connected to an <see cref="ITransportSender"/>.
         /// </summary>

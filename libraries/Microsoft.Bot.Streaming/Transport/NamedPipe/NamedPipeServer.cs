@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,20 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
     /// </summary>
     public class NamedPipeServer : IStreamingTransportServer, IDisposable
     {
+        private static readonly List<NamedPipeServer> _namedPipeServers
+            = new List<NamedPipeServer>();
+
+        private static readonly List<NamedPipeServer> _finishedNamedPipeServers
+            = new List<NamedPipeServer>();
+
+        private static readonly List<NamedPipeServer> _finishedNamedPipeServers2
+            = new List<NamedPipeServer>();
+
+        private static readonly List<NamedPipeServer> _doDisconnectedNamedPipeServers
+            = new List<NamedPipeServer>();
+
+        private static NamedPipeServer _instance;
+
         private readonly string _baseName;
         private readonly RequestHandler _requestHandler;
         private readonly RequestManager _requestManager;
@@ -40,6 +55,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// </param>
         public NamedPipeServer(string baseName, RequestHandler requestHandler, bool autoReconnect = true)
         {
+            _instance = this;
             if (string.IsNullOrWhiteSpace(baseName))
             {
                 throw new ArgumentNullException(nameof(baseName));
@@ -61,6 +77,16 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         /// </summary>
         public event DisconnectedEventHandler Disconnected;
 
+        public event Action Connected;
+
+        public static List<Tuple<int, Task>> ConnectTask { get; } = new List<Tuple<int, Task>>();
+
+        private NamedPipeTransport[] Transports { get; } = new NamedPipeTransport[2];
+
+#pragma warning disable SA1202 // Elements should be ordered by access
+        public NamedPipeServerStream NamedPipeServerStream { get; private set; }
+#pragma warning restore SA1202 // Elements should be ordered by access
+
         /// <summary>
         /// Gets a value indicating whether or not this server is currently connected.
         /// </summary>
@@ -73,19 +99,106 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
         public bool IsConnected => _sender.IsConnected && _receiver.IsConnected;
 
         /// <summary>
+        /// Gets a value indicating whether or not this server is currently connected.
+        /// </summary>
+        /// <returns>
+        /// True if this server is connected and ready to send and receive messages, otherwise false.
+        /// </returns>
+        /// <value>
+        /// A boolean value indicating whether or not this server is currently connected.
+        /// </value>
+        public bool SenderConnected => _sender.IsConnected;
+
+        /// <summary>
+        /// Gets a value indicating whether or not this server is currently connected.
+        /// </summary>
+        /// <returns>
+        /// True if this server is connected and ready to send and receive messages, otherwise false.
+        /// </returns>
+        /// <value>
+        /// A boolean value indicating whether or not this server is currently connected.
+        /// </value>
+        public bool ReceiverConnected => _receiver.IsConnected;
+
+        /// <summary>
+        /// 
+        /// </summary>
+#pragma warning disable SA1609 // Property documentation should have value
+#pragma warning disable SA1623 // Property summary documentation should match accessors
+#pragma warning disable SA1606 // Element documentation should have summary text
+        public List<string> StackTrack { get; } = new List<string>();
+#pragma warning restore SA1606 // Element documentation should have summary text
+#pragma warning restore SA1623 // Property summary documentation should match accessors
+#pragma warning restore SA1609 // Property documentation should have value
+
+        /// <summary>
+        /// Gets a.
+        /// </summary>
+        /// <returns>
+        /// True if this server is connected and ready to send and receive messages, otherwise false.
+        /// </returns>
+        /// <value>
+        /// A boolean value indicating whether or not this server is currently connected.
+        /// </value>
+#pragma warning disable SA1204 // Static elements should appear before instance elements
+        public static NamedPipeServer Instance => _instance;
+#pragma warning restore SA1204 // Static elements should appear before instance elements
+
+        /// <summary>
+        /// GetServer.
+        /// </summary>
+        /// <returns>Servers.</returns>
+        public static List<NamedPipeServer> GetServers()
+        {
+            return _namedPipeServers;
+        }
+
+        /// <summary>
+        /// GetServer.
+        /// </summary>
+        /// <returns>Servers.</returns>
+        public static List<NamedPipeServer> GetFinishedServers()
+        {
+            return _finishedNamedPipeServers;
+        }
+
+        /// <summary>
+        /// GetServer.
+        /// </summary>
+        /// <returns>Servers.</returns>
+        public static List<NamedPipeServer> GetFinishedServers2()
+        {
+            return _finishedNamedPipeServers2;
+        }
+
+        /// <summary>
+        /// GetServer.
+        /// </summary>
+        /// <returns>Servers.</returns>
+        public static List<NamedPipeServer> GetDisconnectedServers()
+        {
+            return _doDisconnectedNamedPipeServers;
+        }
+
+        /// <summary>
         /// Used to establish the connection used by this server and begin listening for incoming messages.
         /// </summary>
         /// <returns>A <see cref="Task"/> to handle the server listen operation. This task will not resolve as long as the server is running.</returns>
         public async Task StartAsync()
         {
+            _namedPipeServers.Add(this);
+
             var incomingPipeName = _baseName + NamedPipeTransport.ServerIncomingPath;
             var incomingServer = new NamedPipeServerStream(incomingPipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.WriteThrough | PipeOptions.Asynchronous);
             await incomingServer.WaitForConnectionAsync().ConfigureAwait(false);
+
+            _finishedNamedPipeServers.Add(this);
 
             var outgoingPipeName = _baseName + NamedPipeTransport.ServerOutgoingPath;
             var outgoingServer = new NamedPipeServerStream(outgoingPipeName, PipeDirection.Out, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.WriteThrough | PipeOptions.Asynchronous);
             await outgoingServer.WaitForConnectionAsync().ConfigureAwait(false);
 
+            _finishedNamedPipeServers2.Add(this);
 #pragma warning disable CA2000 // Dispose objects before losing scope
 
             // Ownership of the disposable transports is passed to the 
@@ -93,7 +206,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
             // disposing them when the time is right.
             _sender.Connect(new NamedPipeTransport(outgoingServer));
             _receiver.Connect(new NamedPipeTransport(incomingServer));
-
+            Connected?.Invoke();
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
@@ -203,7 +316,7 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
                     }
 
                     Disconnected?.Invoke(this, DisconnectedEventArgs.Empty);
-
+                    _doDisconnectedNamedPipeServers.Add(this);
                     if (_autoReconnect)
                     {
                         // Try to rerun the server connection

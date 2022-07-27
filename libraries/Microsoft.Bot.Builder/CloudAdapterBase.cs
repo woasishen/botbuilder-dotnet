@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Streaming;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -59,10 +60,11 @@ namespace Microsoft.Bot.Builder
 
             if (activities.Length == 0)
             {
+                LogCfy.Log("Expecting one or more activities, but the array was empty.");
                 throw new ArgumentException("Expecting one or more activities, but the array was empty.", nameof(activities));
             }
 
-            Logger.LogInformation($"SendActivitiesAsync for {activities.Length} activities.");
+            LogCfy.Log($"SendActivitiesAsync for {activities.Length} activities.");
 
             var responses = new ResourceResponse[activities.Length];
 
@@ -292,23 +294,33 @@ namespace Microsoft.Bot.Builder
         /// <returns>A task that represents the work queued to execute. Containing the InvokeResponse if there is one.</returns>
         protected async Task<InvokeResponse> ProcessActivityAsync(AuthenticateRequestResult authenticateRequestResult, Activity activity, BotCallbackHandler callback, CancellationToken cancellationToken)
         {
+            LogCfy.Log("CloudAdapter ProcessActivityAsync");
+
             // Set the callerId on the activity.
             activity.CallerId = authenticateRequestResult.CallerId;
 
             // Create the connector client to use for outbound requests.
             using (var connectorClient = await authenticateRequestResult.ConnectorFactory.CreateAsync(activity.ServiceUrl, authenticateRequestResult.Audience, cancellationToken).ConfigureAwait(false))
-
-            // Create a UserTokenClient instance for the application to use. (For example, it would be used in a sign-in prompt.) 
-            using (var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(authenticateRequestResult.ClaimsIdentity, cancellationToken).ConfigureAwait(false))
-
-            // Create a turn context and run the pipeline.
-            using (var context = CreateTurnContext(activity, authenticateRequestResult.ClaimsIdentity, authenticateRequestResult.Audience, connectorClient, userTokenClient, callback, authenticateRequestResult.ConnectorFactory))
             {
-                // Run the pipeline.
-                await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
+                LogCfy.Log("CloudAdapter ProcessActivityAsync1");
 
-                // If there are any results they will have been left on the TurnContext. 
-                return ProcessTurnResults(context);
+                // Create a UserTokenClient instance for the application to use. (For example, it would be used in a sign-in prompt.) 
+                using (var userTokenClient = await BotFrameworkAuthentication.CreateUserTokenClientAsync(authenticateRequestResult.ClaimsIdentity, cancellationToken).ConfigureAwait(false))
+                {
+                    LogCfy.Log("CloudAdapter ProcessActivityAsync2");
+
+                    // Create a turn context and run the pipeline.
+                    using (var context = CreateTurnContext(activity, authenticateRequestResult.ClaimsIdentity, authenticateRequestResult.Audience, connectorClient, userTokenClient, callback, authenticateRequestResult.ConnectorFactory))
+                    {
+                        LogCfy.Log("CloudAdapter ProcessActivityAsync3");
+
+                        // Run the pipeline.
+                        await RunPipelineAsync(context, callback, cancellationToken).ConfigureAwait(false);
+
+                        // If there are any results they will have been left on the TurnContext. 
+                        return ProcessTurnResults(context);
+                    }
+                }
             }
         }
 
