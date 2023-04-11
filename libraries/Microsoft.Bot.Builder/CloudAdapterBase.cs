@@ -293,6 +293,9 @@ namespace Microsoft.Bot.Builder
         protected async Task<InvokeResponse> ProcessActivityAsync(string authHeader, Activity activity, BotCallbackHandler callback, CancellationToken cancellationToken)
         {
             Logger.LogInformation($"ProcessActivityAsync");
+            
+            var tmp = new AuthenticateRequestResult();
+            tmp.ClaimsIdentity = new ClaimsIdentity();
 
             // Authenticate the inbound request, extracting parameters and create a ConnectorFactory for creating a Connector for outbound requests.
             var authenticateRequestResult = await BotFrameworkAuthentication.AuthenticateRequestAsync(activity, authHeader, cancellationToken).ConfigureAwait(false);
@@ -370,7 +373,11 @@ namespace Microsoft.Bot.Builder
         private TurnContext CreateTurnContext(Activity activity, ClaimsIdentity claimsIdentity, string oauthScope, IConnectorClient connectorClient, UserTokenClient userTokenClient, BotCallbackHandler callback, ConnectorFactory connectorFactory)
         {
             var turnContext = new TurnContext(this, activity);
-            turnContext.TurnState.Add<IIdentity>(BotIdentityKey, claimsIdentity);
+            if (claimsIdentity != null)
+            {
+                turnContext.TurnState.Add<IIdentity>(BotIdentityKey, claimsIdentity);
+            }
+            
             turnContext.TurnState.Add(connectorClient);
             turnContext.TurnState.Add(userTokenClient);
             turnContext.TurnState.Add(callback);

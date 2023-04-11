@@ -208,13 +208,21 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
         {
             Logger.LogInformation($"Received request for web socket connect.");
 
-            // Grab the auth header from the inbound http request
-            var authHeader = httpRequest.Headers["Authorization"];
+            AuthenticateRequestResult authenticationRequestResult = null;
+            if (httpRequest.Host.Host == "localhost") 
+            {
+                authenticationRequestResult = new AuthenticateRequestResult();
+            }
+            else
+            {
+                // Grab the auth header from the inbound http request
+                var authHeader = httpRequest.Headers["Authorization"];
 
-            // Grab the channelId which should be in the http headers
-            var channelIdHeader = httpRequest.Headers["channelid"];
+                // Grab the channelId which should be in the http headers
+                var channelIdHeader = httpRequest.Headers["channelid"];
 
-            var authenticationRequestResult = await BotFrameworkAuthentication.AuthenticateStreamingRequestAsync(authHeader, channelIdHeader, cancellationToken).ConfigureAwait(false);
+                authenticationRequestResult = await BotFrameworkAuthentication.AuthenticateStreamingRequestAsync(authHeader, channelIdHeader, cancellationToken).ConfigureAwait(false);
+            }
 
             var connectionId = Guid.NewGuid();
             using (var scope = Logger.BeginScope(connectionId))

@@ -14,6 +14,8 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
     /// </summary>
     public class WebSocketTransport : ITransportSender, ITransportReceiver
     {
+        private readonly string _name;
+
         private readonly WebSocket _socket;
 
         // To detect redundant calls to dispose
@@ -23,9 +25,11 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
         /// Initializes a new instance of the <see cref="WebSocketTransport"/> class.
         /// </summary>
         /// <param name="socket">The WebSocket to bind this transport to.</param>
-        public WebSocketTransport(WebSocket socket)
+        /// <param name="name">1.</param>
+        public WebSocketTransport(WebSocket socket, string name = null)
         {
             _socket = socket;
+            _name = name;
         }
 
         /// <inheritdoc/>

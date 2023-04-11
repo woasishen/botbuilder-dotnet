@@ -73,7 +73,16 @@ namespace Microsoft.Bot.Connector.Authentication
 
         public override async Task<AuthenticateRequestResult> AuthenticateRequestAsync(Activity activity, string authHeader, CancellationToken cancellationToken)
         {
-            var claimsIdentity = await JwtTokenValidation_AuthenticateRequestAsync(activity, authHeader, cancellationToken).ConfigureAwait(false);
+            ClaimsIdentity claimsIdentity;
+            try
+            {
+                claimsIdentity = await JwtTokenValidation_AuthenticateRequestAsync(activity, authHeader, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                var tmp = ex;
+                throw;
+            }
 
             var outboundAudience = SkillValidation.IsSkillClaim(claimsIdentity.Claims) ? JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims) : _toChannelFromBotOAuthScope;
 

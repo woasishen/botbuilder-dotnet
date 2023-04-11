@@ -18,7 +18,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <summary>
         /// Initializes a new instance of the <see cref="ResponseDisassembler"/> class.
         /// </summary>
-        /// <param name="sender">The <see cref="PayloadSender"/> to send the disassembled data to.</param>
+        /// <param name="sender">The <see cref="PayloadSenderWebSocket"/> to send the disassembled data to.</param>
         /// <param name="id">The ID of this disassembler.</param>
         /// <param name="response">The response to be disassembled.</param>
         public ResponseDisassembler(IPayloadSender sender, Guid id, StreamingResponse response)

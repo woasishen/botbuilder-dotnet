@@ -18,7 +18,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task PayloadSender_WhenLengthNotSet_Sends()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -49,7 +49,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task PayloadSender_WhenLengthNotSet_AndNoData_SendsZeroLengthEnd()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -81,7 +81,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task PayloadSender_WhenLengthSet_Sends()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -113,7 +113,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public void PayloadSender_Connect_ShouldFail()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -123,7 +123,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public void PayloadSender_Dispose()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
 
             var header = new Header()
             {
@@ -143,7 +143,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task HttpContentStreamDisassembler_StringContent_SendsAsFixedLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -162,7 +162,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task HttpContentStreamDisassembler_ObjectContent_SendsAsFixedLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -181,7 +181,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task HttpContentStreamDisassembler_StreamContent_SendsAsVariableLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -204,7 +204,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task RequestDisassembler_SendsAsFixedLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -218,7 +218,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task ResponseDisassembler_SendsAsFixedLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 
@@ -232,7 +232,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
         [Fact]
         public async Task ResponseDisassembler_With_HttpContent_SendsAsFixedLength()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
 

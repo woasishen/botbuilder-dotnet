@@ -184,6 +184,11 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                     // handle unauthorized here as this layer creates the http response
                     httpResponse.StatusCode = (int)HttpStatusCode.Unauthorized;
                 }
+                catch (Exception ex)
+                {
+                    var tmp = ex;
+                    throw;
+                }
             }
         }
 

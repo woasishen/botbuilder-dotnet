@@ -33,19 +33,20 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
         /// </summary>
         /// <param name="socket">The <see cref="WebSocket"/> of the underlying connection for this server to be built on top of.</param>
         /// <param name="requestHandler">A <see cref="RequestHandler"/> to process incoming messages received by this server.</param>
-        public WebSocketServer(WebSocket socket, RequestHandler requestHandler)
+        /// <param name="specalName">A <see cref="string"/> to .</param>
+        public WebSocketServer(WebSocket socket, RequestHandler requestHandler, string specalName = "")
         {
             if (socket == null)
             {
                 throw new ArgumentNullException(nameof(socket));
             }
 
-            _webSocketTransport = new WebSocketTransport(socket);
+            _webSocketTransport = new WebSocketTransport(socket, "Server");
             _requestHandler = requestHandler ?? throw new ArgumentNullException(nameof(requestHandler));
             _requestManager = new RequestManager();
-            _sender = new PayloadSender();
+            _sender = new PayloadSenderWebSocket($"WebSoketServer{specalName}");
             _sender.Disconnected += OnConnectionDisconnected;
-            _receiver = new PayloadReceiver();
+            _receiver = new PayloadReceiverWebSocket($"WebSoketServer{specalName}");
             _receiver.Disconnected += OnConnectionDisconnected;
             _protocolAdapter = new ProtocolAdapter(_requestHandler, _requestManager, _sender, _receiver);
         }

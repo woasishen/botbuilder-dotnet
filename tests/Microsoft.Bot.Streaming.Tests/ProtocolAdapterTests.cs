@@ -17,8 +17,8 @@ namespace Microsoft.Bot.Streaming.UnitTests
         {
             var requestHandler = new Mock<RequestHandler>();
             var requestManager = new Mock<RequestManager>();
-            var payloadSender = new Mock<PayloadSender>();
-            var payloadReceiver = new Mock<PayloadReceiver>();
+            var payloadSender = new Mock<PayloadSenderWebSocket>();
+            var payloadReceiver = new Mock<PayloadReceiverWebSocket>();
             var protocolAdapter = new ProtocolAdapter(requestHandler.Object, requestManager.Object, payloadSender.Object, payloadReceiver.Object);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() => protocolAdapter.SendRequestAsync(null));

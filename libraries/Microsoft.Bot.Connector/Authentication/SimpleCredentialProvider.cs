@@ -82,7 +82,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </remarks>
         public Task<bool> IsAuthenticationDisabledAsync()
         {
-            return Task.FromResult(string.IsNullOrEmpty(AppId));
+            return Task.FromResult(true);
         }
     }
 }

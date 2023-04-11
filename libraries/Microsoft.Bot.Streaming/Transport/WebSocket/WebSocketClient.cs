@@ -34,7 +34,8 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
         /// <param name="url">The URL of the remote server to connect to.</param>
         /// <param name="requestHandler">Optional <see cref="RequestHandler"/> to process incoming messages received by this server.</param>
         /// <param name="handlerContext">Optional context for the <see cref="RequestHandler"/> to operate within.</param>
-        public WebSocketClient(string url, RequestHandler requestHandler = null, object handlerContext = null)
+        /// <param name="specaialName">1.</param>
+        public WebSocketClient(string url, RequestHandler requestHandler = null, object handlerContext = null, string specaialName = "")
         {
             if (string.IsNullOrWhiteSpace(url))
             {
@@ -45,8 +46,8 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
             _requestHandler = requestHandler;
             _requestManager = new RequestManager();
 
-            _sender = new PayloadSender();
-            _receiver = new PayloadReceiver();
+            _sender = new PayloadSenderWebSocket($"WebSoketClient{specaialName}");
+            _receiver = new PayloadReceiverWebSocket($"WebSoketClient{specaialName}");
 
             _protocolAdapter = new ProtocolAdapter(_requestHandler, _requestManager, _sender, _receiver, handlerContext);
 
@@ -127,7 +128,7 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
 
             // We don't dispose the websocket, since WebSocketTransport is now
             // the owner of the web socket.
-            var socketTransport = new WebSocketTransport(clientWebSocket);
+            var socketTransport = new WebSocketTransport(clientWebSocket, "clientConnectEx");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             // Listen for disconnected events.
@@ -202,7 +203,7 @@ namespace Microsoft.Bot.Streaming.Transport.WebSockets
             // We don't dispose the websocket, since WebSocketTransport is now
             // the owner of the web socket.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            var socketTransport = new WebSocketTransport(socket);
+            var socketTransport = new WebSocketTransport(socket, "clientConnectInternal");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             // Listen for disconnected events.

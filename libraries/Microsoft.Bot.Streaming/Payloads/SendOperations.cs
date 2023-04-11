@@ -11,7 +11,7 @@ using Microsoft.Bot.Streaming.PayloadTransport;
 namespace Microsoft.Bot.Streaming.Payloads
 {
     /// <summary>
-    /// A set of tasks used for attaching one or more <see cref="PayloadDisassembler"/>s to a single <see cref="PayloadSender"/> which multiplexes data chunks from
+    /// A set of tasks used for attaching one or more <see cref="PayloadDisassembler"/>s to a single <see cref="PayloadSenderWebSocket"/> which multiplexes data chunks from
     /// multiple disassembled payloads and sends them out over the wire via a shared <see cref="Transport.ITransportSender"/>.
     /// </summary>
     public class SendOperations

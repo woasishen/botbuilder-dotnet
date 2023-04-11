@@ -11,6 +11,7 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
 {
     internal class SendQueue<T> : IDisposable
     {
+        private readonly string _name;
         private readonly Func<T, Task> _action;
 
         // _queue and _semaphore are interlocked by _lock
@@ -24,11 +25,12 @@ namespace Microsoft.Bot.Streaming.PayloadTransport
         // To detect redundant calls to dispose
         private bool _disposed;
 
-        public SendQueue(Func<T, Task> action, int timeoutSeconds = 30)
+        public SendQueue(Func<T, Task> action, int timeoutSeconds = 30, string name = null)
         {
             _action = action;
             _timeoutSeconds = timeoutSeconds;
             Background.Run(ProcessAsync);
+            _name = name;
         }
 
         public void Post(T item)

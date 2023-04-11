@@ -189,7 +189,8 @@ namespace Microsoft.Bot.Connector.Streaming.Transport
 
             await WriteAsync(
                 header: requestHeader,
-                writeFunc: async pipeWriter => await pipeWriter.WriteAsync(requestBytes).ConfigureAwait(false)).ConfigureAwait(false);
+                writeFunc: async pipeWriter => await pipeWriter.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task SendStreamAsync(Guid id, Stream stream, CancellationToken cancellationToken)
@@ -324,7 +325,7 @@ namespace Microsoft.Bot.Connector.Streaming.Transport
                 try
                 {
                     HeaderSerializer.Serialize(header, _sendHeaderBuffer, 0);
-                    await output.WriteAsync(_sendHeaderBuffer).ConfigureAwait(false);
+                    await output.WriteAsync(_sendHeaderBuffer, cancellationToken).ConfigureAwait(false);
                     await writeFunc(output).ConfigureAwait(false);
                 }
                 finally

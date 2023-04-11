@@ -22,7 +22,7 @@ namespace Microsoft.Bot.Streaming.UnitTests.Payloads
 
             var transport = new MockTransportReceiver(buffer);
 
-            var receiver = new PayloadReceiver();
+            var receiver = new PayloadReceiverWebSocket();
             receiver.Disconnected += (sender, e) =>
             {
                 Assert.Equal("Stream closed while reading header bytes", e.Reason);

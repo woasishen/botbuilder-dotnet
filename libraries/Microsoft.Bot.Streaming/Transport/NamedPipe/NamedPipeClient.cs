@@ -52,9 +52,9 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
 
             _requestManager = new RequestManager();
 
-            _sender = new PayloadSender();
+            _sender = new PayloadSenderNamedPiped("NamedPipeClient");
             _sender.Disconnected += OnConnectionDisconnected;
-            _receiver = new PayloadReceiver();
+            _receiver = new PayloadReceiverNamedPiped("NamedPipeClient");
             _receiver.Disconnected += OnConnectionDisconnected;
 
             _protocolAdapter = new ProtocolAdapter(_requestHandler, _requestManager, _sender, _receiver);

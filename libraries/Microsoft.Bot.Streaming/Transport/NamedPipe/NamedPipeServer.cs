@@ -49,9 +49,9 @@ namespace Microsoft.Bot.Streaming.Transport.NamedPipes
             _requestHandler = requestHandler ?? throw new ArgumentNullException(nameof(requestHandler));
             _autoReconnect = autoReconnect;
             _requestManager = new RequestManager();
-            _sender = new PayloadSender();
+            _sender = new PayloadSenderNamedPiped("NamedPipeServer");
             _sender.Disconnected += OnConnectionDisconnected;
-            _receiver = new PayloadReceiver();
+            _receiver = new PayloadReceiverNamedPiped("NamedPipeServer");
             _receiver.Disconnected += OnConnectionDisconnected;
             _protocolAdapter = new ProtocolAdapter(_requestHandler, _requestManager, _sender, _receiver);
         }

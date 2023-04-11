@@ -26,7 +26,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         /// <summary>
         /// Initializes a new instance of the <see cref="PayloadDisassembler"/> class.
         /// </summary>
-        /// <param name="sender">The <see cref="PayloadSender"/> used to send the disassembled payload chunks.</param>
+        /// <param name="sender">The <see cref="PayloadSenderWebSocket"/> used to send the disassembled payload chunks.</param>
         /// <param name="id">The ID of this disassembler.</param>
         public PayloadDisassembler(IPayloadSender sender, Guid id)
         {
@@ -70,7 +70,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         public abstract Task<StreamWrapper> GetStreamAsync();
 
         /// <summary>
-        /// Begins the process of disassembling a payload and sending the resulting chunks to the <see cref="PayloadSender"/> to dispatch over the transport.
+        /// Begins the process of disassembling a payload and sending the resulting chunks to the <see cref="PayloadSenderWebSocket"/> to dispatch over the transport.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token. Not currently used.</param>
         /// <returns>A task representing the state of the disassembly.</returns>

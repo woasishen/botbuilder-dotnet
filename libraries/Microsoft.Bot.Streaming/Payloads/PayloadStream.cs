@@ -14,6 +14,7 @@ namespace Microsoft.Bot.Streaming.Payloads
     /// </summary>
     public class PayloadStream : Stream
     {
+        private bool _disposed;
         private readonly PayloadStreamAssembler _assembler;
         private readonly Queue<byte[]> _bufferQueue = new Queue<byte[]>();
 
@@ -198,7 +199,15 @@ namespace Microsoft.Bot.Streaming.Payloads
                 _producerLength += count;
             }
 
-            _dataAvailable.Release();
+            try
+            {
+                _dataAvailable.Release();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{_disposed}--{ex}");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -206,6 +215,7 @@ namespace Microsoft.Bot.Streaming.Payloads
         {
             if (disposing)
             {
+                _disposed = true;
                 Cancel();
                 _dataAvailable?.Dispose();
             }

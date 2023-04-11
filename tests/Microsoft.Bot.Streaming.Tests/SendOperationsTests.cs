@@ -23,7 +23,7 @@ namespace Microsoft.Bot.Streaming.UnitTests
         [Fact]
         public async Task SendRequestAsync_WaitsTillAllDataSent()
         {
-            var payLoadSender = new PayloadSender();
+            var payLoadSender = new PayloadSenderWebSocket();
             var tcs = new TaskCompletionSource<bool>();
             DisconnectedEventHandler eventHandler = (sender, args) =>
             {
@@ -52,7 +52,7 @@ namespace Microsoft.Bot.Streaming.UnitTests
         [Fact]
         public async Task RequestDisassembler_WithVariableStream_Sends()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
             var ops = new SendOperations(sender);
@@ -70,7 +70,7 @@ namespace Microsoft.Bot.Streaming.UnitTests
         [Fact]
         public async Task RequestDisassembler_WithJsonStream_Sends()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
             var ops = new SendOperations(sender);
@@ -86,7 +86,7 @@ namespace Microsoft.Bot.Streaming.UnitTests
         [Fact]
         public async Task SendResponseAsync()
         {
-            var sender = new PayloadSender();
+            var sender = new PayloadSenderWebSocket();
             var transport = new MockTransportSender();
             sender.Connect(transport);
             var ops = new SendOperations(sender);
